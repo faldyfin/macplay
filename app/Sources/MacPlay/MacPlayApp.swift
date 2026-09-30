@@ -20,6 +20,7 @@ struct MacPlayApp: App {
 
 enum SidebarSection: String, CaseIterable, Identifiable {
     case dashboard
+    case steam
     case games
     case installed
     case apps
@@ -27,6 +28,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .dashboard: return L.t("My Mac", "Ma machine")
+        case .steam: return "Steam"
         case .games: return L.t("Games", "Jeux")
         case .installed: return L.t("My games", "Mes jeux")
         case .apps: return L.t("Windows apps", "Apps Windows")
@@ -35,6 +37,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     var icon: String {
         switch self {
         case .dashboard: return "cpu"
+        case .steam: return "cloud"
         case .games: return "gamecontroller"
         case .installed: return "star"
         case .apps: return "macwindow"
@@ -68,6 +71,7 @@ struct ContentView: View {
         } detail: {
             switch selection ?? .dashboard {
             case .dashboard: DashboardView()
+            case .steam: SteamView()
             case .games: GamesView()
             case .installed: InstalledView()
             case .apps: AppsView()

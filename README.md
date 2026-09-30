@@ -133,7 +133,7 @@ This alpha exists to collect feedback:
   under *Windows apps*, but MacPlay doesn't see the games inside them: launch those from
   the launcher itself. Whether a given launcher runs under Wine at all is up to Wine.
 - Steam's self-updates can be capricious under Wine — if Steam hangs or misbehaves
-  after an update, use **"Restart Steam cleanly"** in MacPlay's My Mac tab; that
+  after an update, use **"Restart Steam cleanly"** in MacPlay's Steam tab; that
   resolves most of it.
 - Not notarized → the one-time Gatekeeper dance described above.
 - Launching a game restarts Steam if it was already open (Wine can't forward commands

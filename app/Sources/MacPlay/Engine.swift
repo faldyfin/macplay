@@ -62,13 +62,15 @@ struct DoctorReport {
     let swapUsedGB: Double
     let swapTotalGB: Double
     let diskFreeGB: Double
-    let wrapperInstalled: Bool
-    let engineVersion: String?
-    let activeBackend: String
-    let sessionAlive: Bool
-    let steamRunning: Bool
 
     var swapSaturated: Bool { swapTotalGB > 0 && swapUsedGB / swapTotalGB > 0.75 }
+}
+
+struct SteamStatus {
+    let installed: Bool
+    let running: Bool
+    let engineVersion: String?
+    let backend: String
 }
 
 // MARK: - Native engine (no external runtime needed)
@@ -200,26 +202,23 @@ enum Engine {
             diskFree = Double(free) / 1_073_741_824.0
         }
 
-        let installed = wrapperInstalled
-        var engineVersion: String? = nil
-        var backend = "WineD3D"
-        if installed {
-            engineVersion = (try? String(contentsOfFile: wrapperPath + "/Contents/SharedSupport/wine/version", encoding: .utf8))?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            backend = activeBackend(of: wrapperPath).uppercased()
-        }
-        let alive = sh("/usr/bin/pgrep", ["-f", wrapperPath + ".*wineserver"]).code == 0
-
         return DoctorReport(
             profile: profile,
             swapUsedGB: swapUsed, swapTotalGB: swapTotal,
-            diskFreeGB: diskFree,
-            wrapperInstalled: installed,
-            engineVersion: engineVersion,
-            activeBackend: backend,
-            sessionAlive: alive,
-            steamRunning: installed && steamUIAlive
+            diskFreeGB: diskFree
         )
+    }
+
+    static func steamStatus() -> SteamStatus {
+        let installed = wrapperInstalled
+        let engineVersion = installed
+            ? (try? String(contentsOfFile: wrapperPath + "/Contents/SharedSupport/wine/version", encoding: .utf8))?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            : nil
+        return SteamStatus(installed: installed,
+                           running: installed && steamUIAlive,
+                           engineVersion: engineVersion,
+                           backend: activeBackend(of: wrapperPath).uppercased())
     }
 
     static var wrapperInstalled: Bool {
