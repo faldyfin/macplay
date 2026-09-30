@@ -28,6 +28,7 @@ struct DashboardView: View {
     @State private var report: DoctorReport?
     @State private var confirmUninstall = false
     @State private var confirmReinstall = false
+    @State private var confirmStop = false
     @StateObject private var runner = ActionRunner()
 
     var body: some View {
@@ -81,9 +82,22 @@ struct DashboardView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         if report?.wrapperInstalled == true {
                             if report?.steamRunning == true {
-                                Label(L.t("Steam is running.", "Steam est en cours d'exécution."),
-                                      systemImage: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
+                                HStack {
+                                    Label(L.t("Steam is running.", "Steam est en cours d'exécution."),
+                                          systemImage: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                    Button(L.t("Stop Steam", "Arrêter Steam")) {
+                                        if Engine.downloadInProgress { confirmStop = true } else { stopSteam() }
+                                    }
+                                    .disabled(runner.running)
+                                }
+                                .confirmationDialog(
+                                    L.t("Steam is downloading. Stopping it now can make Steam throw away what it has downloaded so far.",
+                                        "Steam télécharge. L'arrêter maintenant peut lui faire jeter ce qui est déjà téléchargé."),
+                                    isPresented: $confirmStop, titleVisibility: .visible
+                                ) {
+                                    Button(L.t("Stop anyway", "Arrêter quand même"), role: .destructive) { stopSteam() }
+                                }
                             } else {
                                 Label(L.t("Steam is installed.", "Steam est installé."),
                                       systemImage: "checkmark.circle.fill")
@@ -164,6 +178,10 @@ struct DashboardView: View {
         .onChange(of: runner.running) { isRunning in
             if !isRunning { Task { await refresh() } }
         }
+    }
+
+    private func stopSteam() {
+        runner.start(L.t("Stopping Steam", "Arrêt de Steam"), Engine.stopSteam)
     }
 
     private func refresh() async {

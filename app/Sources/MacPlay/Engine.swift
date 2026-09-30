@@ -452,6 +452,15 @@ enum Engine {
         }
     }
 
+    static func stopSteam(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            emit(L.t("Stopping Steam and everything it started…", "Arrêt de Steam et de tout ce qu'il a lancé…"))
+            sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
+            Thread.sleep(forTimeInterval: 3)
+            done(steamUIAlive ? 1 : 0)
+        }
+    }
+
     static func restart(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             emit(L.t("Stopping the Wine session…", "Arrêt de la session Wine…"))
