@@ -8,13 +8,21 @@ struct SteamView: View {
     @State private var confirmUninstall = false
     @State private var confirmReinstall = false
     @State private var confirmStop = false
+    /// Set by Launch until Steam's window is up, so the button can't be pressed twice.
+    @State private var launchStarted: Date?
     @StateObject private var runner = ActionRunner()
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Text("Steam")
-                    .font(.largeTitle.bold())
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Steam")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                    if let status, status.installed {
+                        launchOrStop(status)
+                    }
+                }
 
                 GroupBox(L.t("Windows Steam", "Steam Windows")) {
                     VStack(alignment: .leading, spacing: 10) {
@@ -45,24 +53,28 @@ struct SteamView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
         }
-        .task { await refresh() }
+        .task {
+            await refresh()
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                await refresh()
+            }
+        }
         .onChange(of: runner.running) { isRunning in
             if !isRunning { Task { await refresh() } }
         }
     }
 
     @ViewBuilder
-    private func installedControls(_ status: SteamStatus) -> some View {
+    private func launchOrStop(_ status: SteamStatus) -> some View {
         if status.running {
-            HStack {
-                Label(L.t("Steam is running.", "Steam est en cours d'exécution."),
-                      systemImage: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                Button(L.t("Stop Steam", "Arrêter Steam")) {
-                    if Engine.downloadInProgress { confirmStop = true } else { stopSteam() }
-                }
-                .disabled(runner.running)
+            Button {
+                if Engine.downloadInProgress { confirmStop = true } else { stopSteam() }
+            } label: {
+                Label(L.t("Stop", "Arrêter"), systemImage: "stop.fill")
             }
+            .controlSize(.large)
+            .disabled(runner.running)
             .confirmationDialog(
                 L.t("Steam is downloading. Stopping it now can make Steam throw away what it has downloaded so far.",
                     "Steam télécharge. L'arrêter maintenant peut lui faire jeter ce qui est déjà téléchargé."),
@@ -70,6 +82,30 @@ struct SteamView: View {
             ) {
                 Button(L.t("Stop anyway", "Arrêter quand même"), role: .destructive) { stopSteam() }
             }
+        } else if launchStarted != nil {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text(L.t("Starting Steam…", "Démarrage de Steam…")).foregroundStyle(.secondary)
+            }
+        } else {
+            Button {
+                launchStarted = Date()
+                Task.detached(priority: .userInitiated) { Engine.launchSteam() }
+            } label: {
+                Label(L.t("Launch", "Lancer"), systemImage: "play.fill")
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(runner.running)
+        }
+    }
+
+    @ViewBuilder
+    private func installedControls(_ status: SteamStatus) -> some View {
+        if status.running {
+            Label(L.t("Steam is running.", "Steam est en cours d'exécution."),
+                  systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.green)
         } else {
             Label(L.t("Steam is installed.", "Steam est installé."),
                   systemImage: "checkmark.circle.fill")
@@ -149,5 +185,9 @@ struct SteamView: View {
         let fresh = await Task.detached(priority: .userInitiated) { Engine.steamStatus() }.value
         Self.lastStatus = fresh
         status = fresh
+        // cold starts (first launch, self-update) can take minutes
+        if fresh.running || (launchStarted.map { Date().timeIntervalSince($0) > 180 } ?? false) {
+            launchStarted = nil
+        }
     }
 }

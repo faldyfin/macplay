@@ -451,6 +451,11 @@ enum Engine {
         }
     }
 
+    /// Opening the wrapper lets its launcher start Steam with the chosen graphics engine.
+    static func launchSteam() {
+        sh("/usr/bin/open", [wrapperPath])
+    }
+
     static func stopSteam(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             emit(L.t("Stopping Steam and everything it started…", "Arrêt de Steam et de tout ce qu'il a lancé…"))

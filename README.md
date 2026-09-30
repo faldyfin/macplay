@@ -30,7 +30,7 @@ If you find MacPlay useful, those projects deserve your stars first.
 ## What it does
 
 - **One-click Steam setup** — downloads and assembles the whole Wine + Steam stack
-  (engine, prefix, fonts, known workarounds). Stop, reinstall or uninstall just as easily.
+  (engine, prefix, fonts, known workarounds). Launch, stop, reinstall or uninstall it just as easily.
 - **Per-chip advice, not generic advice** — reads your exact Mac (M-series generation,
   GPU cores, RAM) and recommends a preset, upscaling and an honest fps estimate per game.
 - **The right graphics engine per game** — D3DMetal / DXMT / DXVK / WineD3D, applied in
