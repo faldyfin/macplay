@@ -110,7 +110,12 @@ The app icon comes from `icon/AppIcon-source.png`: `swift icon/make-icon.swift` 
 cuts the tile out of it and regenerates `icon/AppIcon.icns`.
 
 The repo also contains the original Python prototype of the engine
-(`macplay.py`, dev tool only) and the games database (`data/games.json`).
+(`macplay.py`, dev tool only) and the hand-maintained games list (`data/games.json`).
+
+`data/compatibility.json` is generated: `tools/update_compat.py` merges `data/games.json`
+with AppleGamingWiki and AreWeAntiCheatYet, and the *Update compatibility list* workflow
+runs it every Monday and commits the result. Don't edit it by hand. To refresh it locally:
+`python3 tools/update_compat.py` (standard library only).
 
 Specs for new work use [GitHub Spec Kit](https://github.com/github/spec-kit): project
 scaffolding lives in `.specify/`, and the `/speckit-*` Claude Code skills in `.claude/skills/`.
@@ -122,7 +127,8 @@ This alpha exists to collect feedback:
 - 🐛 **Something broke?** Open an issue with your chip (e.g. M2 Pro), macOS version,
   the game, and what happened.
 - 🎮 **A game is missing or misrated?** Issues and PRs against `data/games.json`
-  are very welcome — that database is the heart of the project.
+  are very welcome — that hand-tuned list is the heart of the project. Community ratings
+  come from AppleGamingWiki: adding your report there improves MacPlay too.
 - 💡 **Ideas** on making this simpler for non-technical users are the most valuable
   thing you can send.
 
@@ -145,9 +151,21 @@ This alpha exists to collect feedback:
   and DXVK; WineD3D is gone. Wrappers built by earlier MacPlay versions keep their Wine 10
   engine and all four choices.
 - Kernel-anticheat multiplayer games will never work through translation.
+- Imported ratings are only as good as the reports behind them. Many AppleGamingWiki
+  reports are from 2021-2022, before D3DMetal existed, so check the date shown next to each.
+  Imported games have no engine recommendation, and anti-cheat blocks are based on
+  Linux/Proton data.
+- GitHub turns off scheduled workflows in public repositories after 60 days without
+  activity; if the list stops updating, re-enable the workflow in the Actions tab.
 
 ## License
 
-[MIT](LICENSE) — for MacPlay's own code and data. The components MacPlay downloads at
-setup time (Sikarugir wrapper, Wine engines, winetricks, D3DMetal) belong to their
-respective projects under their own licenses.
+[MIT](LICENSE) — for MacPlay's own code and hand-maintained data (`data/games.json`).
+
+`data/compatibility.json` contains content from [AppleGamingWiki](https://www.applegamingwiki.com),
+so it is licensed [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/):
+credit AppleGamingWiki, no commercial use, share alike. It also includes data from
+[AreWeAntiCheatYet](https://github.com/AreWeAntiCheatYet/AreWeAntiCheatYet) (MIT).
+
+The components MacPlay downloads at setup time (Sikarugir wrapper, Wine engines,
+winetricks, D3DMetal) belong to their respective projects under their own licenses.
