@@ -25,7 +25,10 @@ final class ActionRunner: ObservableObject {
 }
 
 struct DashboardView: View {
-    @State private var report: DoctorReport?
+    /// Last check, shown straight away when the tab is reopened while a fresh one runs.
+    private static var lastReport: DoctorReport?
+
+    @State private var report: DoctorReport? = DashboardView.lastReport
     @State private var confirmUninstall = false
     @State private var confirmReinstall = false
     @State private var confirmStop = false
@@ -80,7 +83,13 @@ struct DashboardView: View {
 
                 GroupBox(L.t("Windows Steam", "Steam Windows")) {
                     VStack(alignment: .leading, spacing: 10) {
-                        if report?.wrapperInstalled == true {
+                        if report == nil {
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text(L.t("Checking Steam…", "Vérification de Steam…"))
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else if report?.wrapperInstalled == true {
                             if report?.steamRunning == true {
                                 HStack {
                                     Label(L.t("Steam is running.", "Steam est en cours d'exécution."),
@@ -185,7 +194,9 @@ struct DashboardView: View {
     }
 
     private func refresh() async {
-        report = await Task.detached(priority: .userInitiated) { Engine.doctor() }.value
+        let fresh = await Task.detached(priority: .userInitiated) { Engine.doctor() }.value
+        Self.lastReport = fresh
+        report = fresh
     }
 }
 
