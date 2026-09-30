@@ -2,3 +2,4 @@
 app/.build/
 app/dist/
 *.dmg
+.claude/settings.local.json

@@ -104,6 +104,9 @@ cd app
 The repo also contains the original Python prototype of the engine
 (`macplay.py`, dev tool only) and the games database (`data/games.json`).
 
+Specs for new work use [GitHub Spec Kit](https://github.com/github/spec-kit): project
+scaffolding lives in `.specify/`, and the `/speckit-*` Claude Code skills in `.claude/skills/`.
+
 ## Contributing / feedback
 
 This alpha exists to collect feedback:
