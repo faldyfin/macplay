@@ -38,9 +38,10 @@ If you find MacPlay useful, those projects deserve your stars first.
 - **Launch from the app** — MacPlay boots Steam with your game and watches the session:
   if the game crashes right away, it suggests trying another engine.
 - **Any Windows program, not just Steam** — in *Windows apps*, pick a setup `.exe` (a game,
-  or another launcher). MacPlay gives it its own wrapper (~1.4 GB), runs the installer, finds
-  the installed program and launches it with the engine you pick. Games a launcher installs
-  live in its wrapper and use that engine.
+  or another launcher). MacPlay gives it its own wrapper (~1.4 GB) with the Windows core
+  fonts (without them, some games draw blank text), runs the installer, finds the installed
+  program and launches it with the engine you pick. Games a launcher installs live in its
+  wrapper and use that engine.
 - **Community ratings with context** — rate a game 1–5★; the report is sent anonymously
   *with your hardware profile and the engine used*, so "runs great" actually means
   something.

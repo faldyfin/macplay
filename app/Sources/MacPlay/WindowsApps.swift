@@ -91,7 +91,7 @@ enum WindowsApps {
         if let problem = nameProblem(name) { throw Engine.fail(problem) }
         let app = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app")
 
-        try Engine.downloadToCache(Engine.wrapperDownloads, emit: emit)
+        try Engine.downloadToCache(Engine.wrapperDownloads + [Engine.winetricksDownload], emit: emit)
         try Engine.assembleWrapper(at: app.wrapperPath, emit: emit)
 
         // tag it right away so a half-finished install still shows up and can be uninstalled
@@ -99,6 +99,18 @@ enum WindowsApps {
             plist["CFBundleName"] = name
             plist["CFBundleIdentifier"] = bundleIDPrefix + slug(name)
             Engine.setBackend("d3dmetal", in: &plist)
+        }
+
+        // A fresh prefix has no font files in C:\windows\Fonts; Heartopia (Unity) drew
+        // all its UI text blank until these were installed.
+        emit(L.t("Installing the Windows core fonts (Arial, Verdana…), ~1 min…",
+                 "Installation des polices Windows de base (Arial, Verdana…), ~1 min…"))
+        let fontsEnv = Engine.wineEnv(for: app.wrapperPath).merging(["WINEDLLOVERRIDES": "winemenubuilder.exe=d"]) { _, new in new }
+        let fonts = Engine.sh("/bin/sh", [Engine.cachePath + "/" + Engine.winetricksDownload.name, "-q", "corefonts"],
+                              env: fontsEnv)
+        if fonts.code != 0 {
+            emit(L.t("Core fonts could not be installed — some games may show no text.",
+                     "Les polices de base n'ont pas pu être installées — certains jeux risquent de n'afficher aucun texte."))
         }
 
         let before = exeFiles(in: app.driveC)
