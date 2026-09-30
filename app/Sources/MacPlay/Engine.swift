@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import CryptoKit
 
 // MARK: - Models (mirror data/games.json)
 
@@ -76,10 +77,31 @@ enum Engine {
     static let wrapperPath = NSHomeDirectory() + "/Applications/Sikarugir/Steam.app"
     static let cachePath = NSHomeDirectory() + "/Library/Caches/macplay"
 
-    static let templateURL = "https://github.com/Sikarugir-App/Wrapper/releases/download/v1.0/Template-1.0.11.tar.xz"
-    static let engineURL = "https://github.com/Sikarugir-App/Engines/releases/download/v1.0/WS12WineSikarugir10.0_6.tar.xz"
-    static let winetricksURL = "https://raw.githubusercontent.com/Sikarugir-App/winetricks/master/src/winetricks"
-    static let steamSetupURL = "https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe"
+    /// A cached download. The file name carries the version so a bump never reuses
+    /// an old cache entry. `sha256` is nil only where the vendor serves nothing but
+    /// "latest" (SteamSetup.exe).
+    struct Download {
+        let name: String
+        let url: String
+        let sha256: String?
+    }
+
+    static let templateDownload = Download(
+        name: "Template-1.0.11.tar.xz",
+        url: "https://github.com/Sikarugir-App/Wrapper/releases/download/v1.0/Template-1.0.11.tar.xz",
+        sha256: "9fa15479e7ff6abd99c1d07be285fb95f41fc6991586502427152b1f7d6ccb8a")
+    static let engineDownload = Download(
+        name: "WS12WineSikarugir10.0_6.tar.xz",
+        url: "https://github.com/Sikarugir-App/Engines/releases/download/v1.0/WS12WineSikarugir10.0_6.tar.xz",
+        sha256: "9da7ee0cbf386522f3a9906943726d9c3c125dbbd9ab120e3cde80e88d6091b2")
+    static let winetricksDownload = Download(
+        name: "winetricks-f3890f67",
+        url: "https://raw.githubusercontent.com/Sikarugir-App/winetricks/f3890f670867b5ffbc3938726db45c0f7d16c8ba/src/winetricks",
+        sha256: "672a1ff4442e8691a3ffc0e6860137e201a1d1227e9b3044245f1731e9e9837e")
+    static let steamSetupDownload = Download(
+        name: "SteamSetup.exe",
+        url: "https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe",
+        sha256: nil)
     static let steamFlags = "-allosarches -cef-force-32bit -cef-in-process-gpu -cef-disable-sandbox"
 
     static let backendKeys = ["d3dmetal": "D3DMETAL", "dxmt": "DXMT", "dxvk": "DXVK"]
@@ -436,25 +458,35 @@ enum Engine {
     }
 
     /// What every wrapper is built from (Steam's and each Windows app's).
-    static let wrapperDownloads = [("Template.tar.xz", templateURL), ("Engine.tar.xz", engineURL)]
+    static let wrapperDownloads = [templateDownload, engineDownload]
 
-    /// Fetch files into the cache once (curl ships with macOS).
-    static func downloadToCache(_ files: [(String, String)], emit: (String) -> Void) throws {
+    /// Fetch files into the cache once (curl ships with macOS), checking each
+    /// against its pinned SHA-256 — cache hits included.
+    static func downloadToCache(_ files: [Download], emit: (String) -> Void) throws {
         let fm = FileManager.default
         try fm.createDirectory(atPath: cachePath, withIntermediateDirectories: true)
-        for (name, url) in files {
+        for file in files {
+            let name = file.name
             let dest = cachePath + "/" + name
             if fm.fileExists(atPath: dest) {
-                emit(L.t("Cached: \(name)", "En cache : \(name)"))
-                continue
+                if matchesDigest(dest, file.sha256) {
+                    emit(L.t("Cached: \(name)", "En cache : \(name)"))
+                    continue
+                }
+                try fm.removeItem(atPath: dest)  // corrupted or altered: fetch it again
             }
             emit(L.t("Downloading \(name)…", "Téléchargement de \(name)…"))
             // unique partial name: two setups may fetch the same file at once
             let part = dest + "." + UUID().uuidString + ".part"
-            let r = sh("/usr/bin/curl", ["-sL", "--fail", "-o", part, url])
+            let r = sh("/usr/bin/curl", ["-sL", "--fail", "-o", part, file.url])
             guard r.code == 0 else {
                 try? fm.removeItem(atPath: part)
                 throw fail(L.t("Download failed: \(name)", "Échec du téléchargement : \(name)"))
+            }
+            guard matchesDigest(part, file.sha256) else {
+                try? fm.removeItem(atPath: part)
+                throw fail(L.t("Checksum mismatch for \(name) — refusing to use it.",
+                               "Somme de contrôle invalide pour \(name) — fichier refusé."))
             }
             if fm.fileExists(atPath: dest) {
                 try? fm.removeItem(atPath: part)
@@ -462,6 +494,18 @@ enum Engine {
                 try fm.moveItem(atPath: part, toPath: dest)
             }
         }
+    }
+
+    /// True when the file matches `expected`, or when there is no digest to check.
+    private static func matchesDigest(_ path: String, _ expected: String?) -> Bool {
+        guard let expected else { return true }
+        guard let handle = FileHandle(forReadingAtPath: path) else { return false }
+        defer { try? handle.close() }
+        var hasher = SHA256()
+        while let chunk = try? handle.read(upToCount: 1 << 20), !chunk.isEmpty {
+            hasher.update(data: chunk)
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined() == expected
     }
 
     /// Environment for running a wrapper's wine directly, outside its launcher.
@@ -488,13 +532,13 @@ enum Engine {
         let work = cachePath + "/work-" + wrapperName
         try? fm.removeItem(atPath: work)
         try fm.createDirectory(atPath: work, withIntermediateDirectories: true)
-        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Template.tar.xz", "-C", work]).code == 0
+        guard sh("/usr/bin/tar", ["-xf", cachePath + "/" + templateDownload.name, "-C", work]).code == 0
         else { throw fail("tar template") }
         guard let appName = try fm.contentsOfDirectory(atPath: work).first(where: { $0.hasSuffix(".app") })
         else { throw fail("template .app not found") }
         try fm.moveItem(atPath: work + "/" + appName, toPath: wrapper)
 
-        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Engine.tar.xz", "-C", work]).code == 0
+        guard sh("/usr/bin/tar", ["-xf", cachePath + "/" + engineDownload.name, "-C", work]).code == 0
         else { throw fail("tar engine") }
         let wineDst = wrapper + "/Contents/SharedSupport/wine"
         try? fm.removeItem(atPath: wineDst)
@@ -530,9 +574,7 @@ enum Engine {
 
         // everything is downloaded before the wrapper exists, so a failed
         // download never leaves a half-built "installed" Steam behind
-        try downloadToCache(wrapperDownloads + [("winetricks", winetricksURL), ("SteamSetup.exe", steamSetupURL)],
-                            emit: emit)
-        sh("/bin/chmod", ["+x", cachePath + "/winetricks"])
+        try downloadToCache(wrapperDownloads + [winetricksDownload, steamSetupDownload], emit: emit)
 
         try assembleWrapper(at: wrapperPath, emit: emit)
         let prefix = prefixPath
@@ -542,9 +584,9 @@ enum Engine {
         let wtCache = NSHomeDirectory() + "/.cache/winetricks/steam"
         try fm.createDirectory(atPath: wtCache, withIntermediateDirectories: true)
         if !fm.fileExists(atPath: wtCache + "/SteamSetup.exe") {
-            try fm.copyItem(atPath: cachePath + "/SteamSetup.exe", toPath: wtCache + "/SteamSetup.exe")
+            try fm.copyItem(atPath: cachePath + "/" + steamSetupDownload.name, toPath: wtCache + "/SteamSetup.exe")
         }
-        let wt = sh("/bin/sh", [cachePath + "/winetricks", "-q", "steam"], env: wineEnv(for: wrapperPath))
+        let wt = sh("/bin/sh", [cachePath + "/" + winetricksDownload.name, "-q", "steam"], env: wineEnv(for: wrapperPath))
         guard wt.code == 0,
               fm.fileExists(atPath: prefix + "/drive_c/Program Files (x86)/Steam/Steam.exe")
         else { throw fail(L.t("Steam installation failed.", "L'installation de Steam a échoué.")) }

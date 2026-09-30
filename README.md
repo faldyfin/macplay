@@ -78,9 +78,12 @@ What MacPlay **does**:
   installer then does is up to the installer, as on Windows.
 - **Downloads and runs third-party components at setup** — the Sikarugir wrapper, Wine
   engines, winetricks and Steam's installer, from GitHub, `raw.githubusercontent.com` and
-  Steam's CDN. This is the same thing every Wine wrapper (Sikarugir, Whisky, CrossOver)
-  does; it's how Windows games run on a Mac at all.
-- **Runs standard system binaries** via shell: `curl`, `tar`, `xattr`, `chmod`, `open`,
+  Steam's CDN; winetricks then fetches Microsoft's core fonts from GitHub. This is the same
+  thing every Wine wrapper (Sikarugir, Whisky, CrossOver) does; it's how Windows games run
+  on a Mac at all. The wrapper, engine and winetricks are pinned to exact versions and
+  checked against their SHA-256 before use (winetricks checks the fonts the same way).
+  Steam's installer is the exception: Valve only serves the latest one.
+- **Runs standard system binaries** via shell: `curl`, `tar`, `xattr`, `open`,
   `sysctl`, `system_profiler`, plus the bundled `wine`.
 - **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
   builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
