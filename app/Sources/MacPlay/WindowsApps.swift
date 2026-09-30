@@ -45,7 +45,8 @@ enum WindowsApps {
 
     /// Why `name` can't be used, or nil. The name becomes a folder name and part
     /// of pgrep patterns, so it is limited to characters that are safe in both.
-    static func nameProblem(_ name: String) -> String? {
+    /// `current` is the app's own name when renaming: changing only its case is allowed.
+    static func nameProblem(_ name: String, renaming current: String? = nil) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
             return L.t("Give it a name.", "Donne-lui un nom.")
@@ -58,7 +59,8 @@ enum WindowsApps {
             return L.t("“Steam” is reserved for MacPlay's own Steam.",
                        "« Steam » est réservé au Steam de MacPlay.")
         }
-        if FileManager.default.fileExists(atPath: root + "/" + trimmed + ".app") {
+        if trimmed.lowercased() != current?.lowercased(),
+           FileManager.default.fileExists(atPath: root + "/" + trimmed + ".app") {
             return L.t("An app with this name already exists.", "Une app porte déjà ce nom.")
         }
         return nil
@@ -246,6 +248,33 @@ enum WindowsApps {
 
     static func stop(_ app: WindowsApp) {
         Engine.sh(app.wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
+    }
+
+    /// Renames the wrapper folder, bundle name and id. The app must be stopped:
+    /// a running Wine session keeps using the old path.
+    static func rename(_ app: WindowsApp, to newName: String) throws -> WindowsApp {
+        let name = newName.trimmingCharacters(in: .whitespaces)
+        if isRunning(app) {
+            throw Engine.fail(L.t("Stop \(app.name) before renaming it.", "Arrête \(app.name) avant de le renommer."))
+        }
+        if let problem = nameProblem(name, renaming: app.name) { throw Engine.fail(problem) }
+
+        let renamed = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app")
+        let fm = FileManager.default
+        // via a temporary name, so a case-only change also works on a case-insensitive disk
+        let temp = root + "/." + UUID().uuidString + ".app"
+        try fm.moveItem(atPath: app.wrapperPath, toPath: temp)
+        do {
+            try fm.moveItem(atPath: temp, toPath: renamed.wrapperPath)
+        } catch {
+            try? fm.moveItem(atPath: temp, toPath: app.wrapperPath)
+            throw error
+        }
+        try updatePlist(of: renamed) { plist in
+            plist["CFBundleName"] = name
+            plist["CFBundleIdentifier"] = bundleIDPrefix + slug(name)
+        }
+        return renamed
     }
 
     static func uninstall(_ app: WindowsApp, emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {

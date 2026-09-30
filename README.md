@@ -40,8 +40,8 @@ If you find MacPlay useful, those projects deserve your stars first.
 - **Any Windows program, not just Steam** — in *Windows apps*, pick a setup `.exe` (a game,
   or another launcher). MacPlay gives it its own wrapper (~1.4 GB) with the Windows core
   fonts (without them, some games draw blank text), runs the installer, finds the installed
-  program and launches it with the engine you pick. Games a launcher installs live in its
-  wrapper and use that engine.
+  program and launches it with the engine you pick; stop, rename or uninstall it any time.
+  Games a launcher installs live in its wrapper and use that engine.
 - **Community ratings with context** — rate a game 1–5★; the report is sent anonymously
   *with your hardware profile and the engine used*, so "runs great" actually means
   something.

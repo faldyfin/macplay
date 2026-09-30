@@ -59,10 +59,13 @@ struct AppsView: View {
             if let installer {
                 installPanel(installer)
             } else if let app = selected {
-                AppDetail(app: app) {
+                AppDetail(app: app, onRemoved: {
                     selected = nil
                     apps = WindowsApps.list()
-                }
+                }, onRenamed: { renamed in
+                    apps = WindowsApps.list()
+                    selected = apps.first { $0.id == renamed.id }
+                })
                 .id(app.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
@@ -179,6 +182,7 @@ struct AppsView: View {
 struct AppDetail: View {
     let app: WindowsApp
     let onRemoved: () -> Void
+    let onRenamed: (WindowsApp) -> Void
 
     @StateObject private var runner = ActionRunner()
     @State private var program: String?
@@ -189,6 +193,9 @@ struct AppDetail: View {
     @State private var running = false
     @State private var confirmUninstall = false
     @State private var problem: String?
+    @State private var renaming = false
+    @State private var newName = ""
+    @State private var renameProblem: String?
 
     var body: some View {
         ScrollView {
@@ -287,23 +294,45 @@ struct AppDetail: View {
                     .padding(4)
                 }
 
-                Button(role: .destructive) { confirmUninstall = true } label: {
-                    Text(L.t("Uninstall \(app.name)…", "Désinstaller \(app.name)…"))
-                }
-                .disabled(runner.running)
-                .confirmationDialog(
-                    L.t("Uninstall \(app.name)? Its wrapper AND everything installed inside (games included) will be deleted.",
-                        "Désinstaller \(app.name) ? Son wrapper ET tout ce qui y est installé (jeux compris) seront supprimés."),
-                    isPresented: $confirmUninstall, titleVisibility: .visible
-                ) {
-                    Button(L.t("Uninstall everything", "Tout désinstaller"), role: .destructive) {
-                        runner.start(L.t("Uninstalling \(app.name)", "Désinstallation de \(app.name)")) { emit, doneCb in
-                            WindowsApps.uninstall(app, emit: emit) { code in
-                                doneCb(code)
-                                if code == 0 { DispatchQueue.main.async { onRemoved() } }
+                HStack {
+                    Button(L.t("Rename…", "Renommer…")) {
+                        newName = app.name
+                        renaming = true
+                    }
+                    .disabled(running || runner.running)
+                    .alert(L.t("Rename \(app.name)", "Renommer \(app.name)"), isPresented: $renaming) {
+                        TextField(L.t("Name", "Nom"), text: $newName)
+                        Button(L.t("Rename", "Renommer")) { rename() }
+                        Button(L.t("Cancel", "Annuler"), role: .cancel) {}
+                    } message: {
+                        Text(L.t("Letters, numbers, spaces, - and _.", "Lettres, chiffres, espaces, - et _."))
+                    }
+
+                    Button(role: .destructive) { confirmUninstall = true } label: {
+                        Text(L.t("Uninstall \(app.name)…", "Désinstaller \(app.name)…"))
+                    }
+                    .disabled(runner.running)
+                    .confirmationDialog(
+                        L.t("Uninstall \(app.name)? Its wrapper AND everything installed inside (games included) will be deleted.",
+                            "Désinstaller \(app.name) ? Son wrapper ET tout ce qui y est installé (jeux compris) seront supprimés."),
+                        isPresented: $confirmUninstall, titleVisibility: .visible
+                    ) {
+                        Button(L.t("Uninstall everything", "Tout désinstaller"), role: .destructive) {
+                            runner.start(L.t("Uninstalling \(app.name)", "Désinstallation de \(app.name)")) { emit, doneCb in
+                                WindowsApps.uninstall(app, emit: emit) { code in
+                                    doneCb(code)
+                                    if code == 0 { DispatchQueue.main.async { onRemoved() } }
+                                }
                             }
                         }
                     }
+                }
+                if running {
+                    Text(L.t("Stop it to rename it.", "Arrête-le pour le renommer."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                if let renameProblem {
+                    Text(renameProblem).font(.callout).foregroundStyle(.red)
                 }
 
                 if !runner.log.isEmpty {
@@ -322,6 +351,15 @@ struct AppDetail: View {
                 running = await Task.detached { WindowsApps.isRunning(app) }.value
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
             }
+        }
+    }
+
+    private func rename() {
+        guard newName.trimmingCharacters(in: .whitespaces) != app.name else { return }
+        do {
+            onRenamed(try WindowsApps.rename(app, to: newName))
+        } catch {
+            renameProblem = error.localizedDescription
         }
     }
 
