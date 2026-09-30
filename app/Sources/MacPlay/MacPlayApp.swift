@@ -29,7 +29,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .dashboard: return L.t("My Mac", "Ma machine")
         case .steam: return "Steam"
-        case .games: return L.t("Games", "Jeux")
+        case .games: return L.t("Compatible Games", "Jeux compatibles")
         case .installed: return L.t("My games", "Mes jeux")
         case .apps: return L.t("Windows apps", "Apps Windows")
         }

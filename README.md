@@ -9,7 +9,7 @@ selection, settings tuned to your exact chip, and community compatibility rating
 > ⚠️ **Alpha.** This is an early build, shared to get feedback. Expect rough edges.
 > Please [open an issue](../../issues) for anything broken, confusing, or missing.
 
-![MacPlay — Games tab](docs/app-games.png)
+![MacPlay — Compatible Games tab](docs/app-games.png)
 
 ## Standing on the shoulders of giants
 
