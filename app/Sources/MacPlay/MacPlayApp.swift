@@ -2,6 +2,13 @@ import SwiftUI
 
 @main
 struct MacPlayApp: App {
+    init() {
+        // Set by VS Code-style editors for their child processes; when MacPlay is
+        // started from such a terminal, Wine would pass it on to Windows programs
+        // and every Electron-based launcher (TapTap…) would run as bare Node and quit.
+        unsetenv("ELECTRON_RUN_AS_NODE")
+    }
+
     var body: some Scene {
         WindowGroup("MacPlay") {
             ContentView()
@@ -15,12 +22,14 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     case dashboard
     case games
     case installed
+    case apps
     var id: String { rawValue }
     var label: String {
         switch self {
         case .dashboard: return L.t("My Mac", "Ma machine")
         case .games: return L.t("Games", "Jeux")
         case .installed: return L.t("My games", "Mes jeux")
+        case .apps: return L.t("Windows apps", "Apps Windows")
         }
     }
     var icon: String {
@@ -28,6 +37,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .dashboard: return "cpu"
         case .games: return "gamecontroller"
         case .installed: return "star"
+        case .apps: return "macwindow"
         }
     }
 }
@@ -60,6 +70,7 @@ struct ContentView: View {
             case .dashboard: DashboardView()
             case .games: GamesView()
             case .installed: InstalledView()
+            case .apps: AppsView()
             }
         }
         // re-create the whole tree when the language changes so every L.t()

@@ -209,27 +209,27 @@ enum Engine {
 
     // MARK: wrapper plist
 
-    static func readWrapperPlist() -> [String: Any]? {
-        guard let data = FileManager.default.contents(atPath: wrapperPath + "/Contents/Info.plist") else { return nil }
+    static func readWrapperPlist(at wrapper: String = wrapperPath) -> [String: Any]? {
+        guard let data = FileManager.default.contents(atPath: wrapper + "/Contents/Info.plist") else { return nil }
         return (try? PropertyListSerialization.propertyList(from: data, format: nil)) as? [String: Any]
     }
 
-    static func writeWrapperPlist(_ plist: [String: Any]) throws {
+    static func writeWrapperPlist(_ plist: [String: Any], at wrapper: String = wrapperPath) throws {
         let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
-        try data.write(to: URL(fileURLWithPath: wrapperPath + "/Contents/Info.plist"))
+        try data.write(to: URL(fileURLWithPath: wrapper + "/Contents/Info.plist"))
     }
 
-    /// Set the graphics backend toggles for a game. Returns the applied key.
-    static func applyBackend(_ backend: String) throws -> String {
-        guard var plist = readWrapperPlist() else {
-            throw NSError(domain: "macplay", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: L.t("Wrapper not found — install Steam first.",
-                                                                    "Wrapper introuvable — installe Steam d'abord.")])
+    /// Set the graphics backend toggles for a wrapper. Returns the applied key.
+    static func applyBackend(_ backend: String, wrapper: String = wrapperPath) throws -> String {
+        guard var plist = readWrapperPlist(at: wrapper) else {
+            throw fail(wrapper == wrapperPath
+                       ? L.t("Wrapper not found — install Steam first.", "Wrapper introuvable — installe Steam d'abord.")
+                       : L.t("Wrapper not found.", "Wrapper introuvable."))
         }
         for key in backendKeys.values { plist[key] = 0 }
         if let key = backendKeys[backend] { plist[key] = 1 }
         plist["MOLTENVKCX"] = 1
-        try writeWrapperPlist(plist)
+        try writeWrapperPlist(plist, at: wrapper)
         return backendKeys[backend] ?? "WineD3D"
     }
 
@@ -268,9 +268,11 @@ enum Engine {
         return false
     }
 
-    /// Backend currently active in the wrapper ("d3dmetal", "dxmt", "dxvk" or "wined3d").
-    static var activeBackend: String {
-        guard let plist = readWrapperPlist() else { return "wined3d" }
+    /// Backend currently active in the Steam wrapper ("d3dmetal", "dxmt", "dxvk" or "wined3d").
+    static var activeBackend: String { activeBackend(of: wrapperPath) }
+
+    static func activeBackend(of wrapper: String) -> String {
+        guard let plist = readWrapperPlist(at: wrapper) else { return "wined3d" }
         for (name, key) in backendKeys where (plist[key] as? Int) == 1 || (plist[key] as? Bool) == true {
             return name
         }
@@ -429,8 +431,95 @@ enum Engine {
         }
     }
 
-    private static func fail(_ message: String) -> NSError {
+    static func fail(_ message: String) -> NSError {
         NSError(domain: "macplay", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+
+    /// What every wrapper is built from (Steam's and each Windows app's).
+    static let wrapperDownloads = [("Template.tar.xz", templateURL), ("Engine.tar.xz", engineURL)]
+
+    /// Fetch files into the cache once (curl ships with macOS).
+    static func downloadToCache(_ files: [(String, String)], emit: (String) -> Void) throws {
+        let fm = FileManager.default
+        try fm.createDirectory(atPath: cachePath, withIntermediateDirectories: true)
+        for (name, url) in files {
+            let dest = cachePath + "/" + name
+            if fm.fileExists(atPath: dest) {
+                emit(L.t("Cached: \(name)", "En cache : \(name)"))
+                continue
+            }
+            emit(L.t("Downloading \(name)…", "Téléchargement de \(name)…"))
+            // unique partial name: two setups may fetch the same file at once
+            let part = dest + "." + UUID().uuidString + ".part"
+            let r = sh("/usr/bin/curl", ["-sL", "--fail", "-o", part, url])
+            guard r.code == 0 else {
+                try? fm.removeItem(atPath: part)
+                throw fail(L.t("Download failed: \(name)", "Échec du téléchargement : \(name)"))
+            }
+            if fm.fileExists(atPath: dest) {
+                try? fm.removeItem(atPath: part)
+            } else {
+                try fm.moveItem(atPath: part, toPath: dest)
+            }
+        }
+    }
+
+    /// Environment for running a wrapper's wine directly, outside its launcher.
+    static func wineEnv(for wrapper: String) -> [String: String] {
+        let wine = wrapper + "/Contents/SharedSupport/wine"
+        return [
+            "WINEPREFIX": wrapper + "/Contents/SharedSupport/prefix",
+            "WINE": wine + "/bin/wine",
+            "WINESERVER": wine + "/bin/wineserver",
+            "PATH": wine + "/bin:" + wrapper + "/Contents/Configure.app/Contents/Resources:"
+                + (ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin"),
+        ]
+    }
+
+    /// Build an empty wrapper (template + Wine engine + fresh prefix) at `wrapper`.
+    /// `wrapperDownloads` must already be in the cache.
+    static func assembleWrapper(at wrapper: String, emit: (String) -> Void) throws {
+        let fm = FileManager.default
+        try fm.createDirectory(atPath: (wrapper as NSString).deletingLastPathComponent,
+                               withIntermediateDirectories: true)
+
+        emit(L.t("Assembling the wrapper…", "Assemblage du wrapper…"))
+        let wrapperName = ((wrapper as NSString).lastPathComponent as NSString).deletingPathExtension
+        let work = cachePath + "/work-" + wrapperName
+        try? fm.removeItem(atPath: work)
+        try fm.createDirectory(atPath: work, withIntermediateDirectories: true)
+        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Template.tar.xz", "-C", work]).code == 0
+        else { throw fail("tar template") }
+        guard let appName = try fm.contentsOfDirectory(atPath: work).first(where: { $0.hasSuffix(".app") })
+        else { throw fail("template .app not found") }
+        try fm.moveItem(atPath: work + "/" + appName, toPath: wrapper)
+
+        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Engine.tar.xz", "-C", work]).code == 0
+        else { throw fail("tar engine") }
+        let wineDst = wrapper + "/Contents/SharedSupport/wine"
+        try? fm.removeItem(atPath: wineDst)
+        try fm.moveItem(atPath: work + "/wswine.bundle", toPath: wineDst)
+
+        // dylib fix: SIP strips DYLD_FALLBACK_LIBRARY_PATH outside the launcher,
+        // so wine's @rpath lookups need the wrapper Frameworks visible from wine/lib
+        let fwDir = wrapper + "/Contents/Frameworks"
+        for name in (try? fm.contentsOfDirectory(atPath: fwDir)) ?? [] where name.hasSuffix(".dylib") {
+            let link = wineDst + "/lib/" + name
+            if !fm.fileExists(atPath: link) {
+                try? fm.createSymbolicLink(atPath: link, withDestinationPath: "../../../Frameworks/" + name)
+            }
+        }
+        sh("/usr/bin/xattr", ["-drs", "com.apple.quarantine", wrapper])
+
+        // wine prefix — the launcher idles in its GUI event loop after the work
+        // is done, so poll for completion and terminate it ourselves
+        emit(L.t("Creating the Wine prefix (1-2 min)…", "Création du prefix Wine (1-2 min)…"))
+        let prefix = wrapper + "/Contents/SharedSupport/prefix"
+        try runLauncherStep(wrapper: wrapper, arg: "WSS-wineprefixcreate", doneCheck: {
+            fm.fileExists(atPath: prefix + "/system.reg")
+                && fm.fileExists(atPath: prefix + "/user.reg")
+                && sh("/usr/bin/pgrep", ["-f", wrapper + ".*wineserver"]).code != 0
+        })
     }
 
     private static func runSetup(emit: (String) -> Void) throws {
@@ -438,86 +527,28 @@ enum Engine {
         guard !wrapperInstalled else {
             throw fail(L.t("Steam is already installed.", "Steam est déjà installé."))
         }
-        try fm.createDirectory(atPath: cachePath, withIntermediateDirectories: true)
-        try fm.createDirectory(atPath: (wrapperPath as NSString).deletingLastPathComponent,
-                               withIntermediateDirectories: true)
 
-        // 1. downloads (curl ships with macOS)
-        let downloads = [
-            ("Template.tar.xz", templateURL), ("Engine.tar.xz", engineURL),
-            ("winetricks", winetricksURL), ("SteamSetup.exe", steamSetupURL),
-        ]
-        for (name, url) in downloads {
-            let dest = cachePath + "/" + name
-            if fm.fileExists(atPath: dest) {
-                emit(L.t("Cached: \(name)", "En cache : \(name)"))
-                continue
-            }
-            emit(L.t("Downloading \(name)…", "Téléchargement de \(name)…"))
-            let r = sh("/usr/bin/curl", ["-sL", "--fail", "-o", dest + ".part", url])
-            guard r.code == 0 else { throw fail(L.t("Download failed: \(name)", "Échec du téléchargement : \(name)")) }
-            try fm.moveItem(atPath: dest + ".part", toPath: dest)
-        }
+        // everything is downloaded before the wrapper exists, so a failed
+        // download never leaves a half-built "installed" Steam behind
+        try downloadToCache(wrapperDownloads + [("winetricks", winetricksURL), ("SteamSetup.exe", steamSetupURL)],
+                            emit: emit)
         sh("/bin/chmod", ["+x", cachePath + "/winetricks"])
 
-        // 2. assemble wrapper
-        emit(L.t("Assembling the wrapper…", "Assemblage du wrapper…"))
-        let work = cachePath + "/work"
-        try? fm.removeItem(atPath: work)
-        try fm.createDirectory(atPath: work, withIntermediateDirectories: true)
-        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Template.tar.xz", "-C", work]).code == 0
-        else { throw fail("tar template") }
-        guard let appName = try fm.contentsOfDirectory(atPath: work).first(where: { $0.hasSuffix(".app") })
-        else { throw fail("template .app not found") }
-        try fm.moveItem(atPath: work + "/" + appName, toPath: wrapperPath)
+        try assembleWrapper(at: wrapperPath, emit: emit)
+        let prefix = prefixPath
 
-        guard sh("/usr/bin/tar", ["-xf", cachePath + "/Engine.tar.xz", "-C", work]).code == 0
-        else { throw fail("tar engine") }
-        let wineDst = wrapperPath + "/Contents/SharedSupport/wine"
-        try? fm.removeItem(atPath: wineDst)
-        try fm.moveItem(atPath: work + "/wswine.bundle", toPath: wineDst)
-
-        // dylib fix: SIP strips DYLD_FALLBACK_LIBRARY_PATH outside the launcher,
-        // so wine's @rpath lookups need the wrapper Frameworks visible from wine/lib
-        let fwDir = wrapperPath + "/Contents/Frameworks"
-        for name in (try? fm.contentsOfDirectory(atPath: fwDir)) ?? [] where name.hasSuffix(".dylib") {
-            let link = wineDst + "/lib/" + name
-            if !fm.fileExists(atPath: link) {
-                try? fm.createSymbolicLink(atPath: link, withDestinationPath: "../../../Frameworks/" + name)
-            }
-        }
-        sh("/usr/bin/xattr", ["-drs", "com.apple.quarantine", wrapperPath])
-
-        // 3. wine prefix — the launcher idles in its GUI event loop after the work
-        // is done, so poll for completion and terminate it ourselves
-        emit(L.t("Creating the Wine prefix (1-2 min)…", "Création du prefix Wine (1-2 min)…"))
-        let prefix = wrapperPath + "/Contents/SharedSupport/prefix"
-        try runLauncherStep(arg: "WSS-wineprefixcreate", doneCheck: {
-            fm.fileExists(atPath: prefix + "/system.reg")
-                && fm.fileExists(atPath: prefix + "/user.reg")
-                && sh("/usr/bin/pgrep", ["-f", wrapperPath + ".*wineserver"]).code != 0
-        })
-
-        // 4. Steam via winetricks (corefonts + known workarounds)
+        // Steam via winetricks (corefonts + known workarounds)
         emit(L.t("Installing Steam (several minutes)…", "Installation de Steam (plusieurs minutes)…"))
         let wtCache = NSHomeDirectory() + "/.cache/winetricks/steam"
         try fm.createDirectory(atPath: wtCache, withIntermediateDirectories: true)
         if !fm.fileExists(atPath: wtCache + "/SteamSetup.exe") {
             try fm.copyItem(atPath: cachePath + "/SteamSetup.exe", toPath: wtCache + "/SteamSetup.exe")
         }
-        let env = [
-            "WINEPREFIX": prefix,
-            "WINE": wineDst + "/bin/wine",
-            "WINESERVER": wineDst + "/bin/wineserver",
-            "PATH": wineDst + "/bin:" + wrapperPath + "/Contents/Configure.app/Contents/Resources:"
-                + (ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin"),
-        ]
-        let wt = sh("/bin/sh", [cachePath + "/winetricks", "-q", "steam"], env: env)
+        let wt = sh("/bin/sh", [cachePath + "/winetricks", "-q", "steam"], env: wineEnv(for: wrapperPath))
         guard wt.code == 0,
               fm.fileExists(atPath: prefix + "/drive_c/Program Files (x86)/Steam/Steam.exe")
         else { throw fail(L.t("Steam installation failed.", "L'installation de Steam a échoué.")) }
 
-        // 5. configure
         emit(L.t("Configuring…", "Configuration…"))
         guard var plist = readWrapperPlist() else { throw fail("wrapper plist unreadable") }
         plist["CFBundleName"] = "Steam"
@@ -533,9 +564,10 @@ enum Engine {
         sh("/usr/bin/open", [wrapperPath])
     }
 
-    private static func runLauncherStep(arg: String, doneCheck: () -> Bool, timeout: TimeInterval = 600) throws {
+    private static func runLauncherStep(wrapper: String, arg: String, doneCheck: () -> Bool,
+                                        timeout: TimeInterval = 600) throws {
         let p = Process()
-        p.executableURL = URL(fileURLWithPath: wrapperPath + "/Contents/MacOS/wineskinlauncher")
+        p.executableURL = URL(fileURLWithPath: wrapper + "/Contents/MacOS/wineskinlauncher")
         p.arguments = [arg]
         p.standardOutput = FileHandle.nullDevice
         p.standardError = FileHandle.nullDevice

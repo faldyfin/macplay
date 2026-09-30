@@ -37,6 +37,10 @@ If you find MacPlay useful, those projects deserve your stars first.
   one click. A curated database ships with ~80 games (from Elden Ring to The Witcher 3).
 - **Launch from the app** — MacPlay boots Steam with your game and watches the session:
   if the game crashes right away, it suggests trying another engine.
+- **Any Windows program, not just Steam** — in *Windows apps*, pick a setup `.exe` (a game,
+  or another launcher). MacPlay gives it its own wrapper (~1.4 GB), runs the installer, finds
+  the installed program and launches it with the engine you pick. Games a launcher installs
+  live in its wrapper and use that engine.
 - **Community ratings with context** — rate a game 1–5★; the report is sent anonymously
   *with your hardware profile and the engine used*, so "runs great" actually means
   something.
@@ -60,22 +64,26 @@ If you find MacPlay useful, those projects deserve your stars first.
 
 Fair question for any app, doubly so for an alpha you found on Reddit. Short version:
 **no admin password, no root, no sandbox escape into your data.** Everything is in the
-open — read [`app/Sources/MacPlay/Engine.swift`](app/Sources/MacPlay/Engine.swift), it's
+open — read [`app/Sources/MacPlay/Engine.swift`](app/Sources/MacPlay/Engine.swift) and
+[`app/Sources/MacPlay/WindowsApps.swift`](app/Sources/MacPlay/WindowsApps.swift), they're
 the whole story.
 
 What MacPlay **does**:
 
 - **Writes only to folders you already own** — `~/Applications/Sikarugir/` (the Steam
-  wrapper) and `~/Library/Caches/macplay` + `~/.cache/winetricks` (downloads). It never
-  writes to `/System`, `/Library`, or anywhere privileged.
+  wrapper, plus one wrapper per Windows program you install) and `~/Library/Caches/macplay`
+  + `~/.cache/winetricks` (downloads, installer logs). It never writes to `/System`,
+  `/Library`, or anywhere privileged.
+- **Runs the Windows installers you pick** inside that program's own wrapper. What the
+  installer then does is up to the installer, as on Windows.
 - **Downloads and runs third-party components at setup** — the Sikarugir wrapper, Wine
   engines, winetricks and Steam's installer, from GitHub, `raw.githubusercontent.com` and
   Steam's CDN. This is the same thing every Wine wrapper (Sikarugir, Whisky, CrossOver)
   does; it's how Windows games run on a Mac at all.
 - **Runs standard system binaries** via shell: `curl`, `tar`, `xattr`, `chmod`, `open`,
   `sysctl`, `system_profiler`, plus the bundled `wine`.
-- **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrapper it
-  downloaded, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
+- **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
+  builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
   MacPlay's own files only.
 - **Sends anonymous ratings** — when you rate a game, the score plus your hardware profile
   (chip, RAM, macOS, engine used) is POSTed to the ratings backend. No account, no personal
@@ -109,14 +117,18 @@ This alpha exists to collect feedback:
 
 ## Known limitations (alpha)
 
-- **Steam only** for now (Battle.net, Epic, GOG are on the wish list).
+- **Steam is the only launcher MacPlay knows inside out** (game database, install and
+  launch by game, crash watch, ratings). Other launchers install fine from their `.exe`
+  under *Windows apps*, but MacPlay doesn't see the games inside them: launch those from
+  the launcher itself. Whether a given launcher runs under Wine at all is up to Wine.
 - Steam's self-updates can be capricious under Wine — if Steam hangs or misbehaves
   after an update, use **"Restart Steam cleanly"** in MacPlay's My Mac tab; that
   resolves most of it.
 - Not notarized → the one-time Gatekeeper dance described above.
 - Launching a game restarts Steam if it was already open (Wine can't forward commands
   to a running Steam instance).
-- One wrapper, one engine at a time: the engine choice is global and applied per session.
+- One engine per wrapper: all Steam games share Steam's engine choice, and each Windows
+  app's games share that app's.
 - Kernel-anticheat multiplayer games will never work through translation.
 
 ## License

@@ -77,7 +77,7 @@ struct InstalledView: View {
     }
 }
 
-private let backendChoices: [(id: String, label: String)] = [
+let backendChoices: [(id: String, label: String)] = [
     ("d3dmetal", "D3DMetal"),
     ("dxmt", "DXMT"),
     ("dxvk", "DXVK"),
