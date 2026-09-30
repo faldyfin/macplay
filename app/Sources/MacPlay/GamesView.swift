@@ -7,6 +7,8 @@ struct GamesView: View {
     @State private var selected: GameEntry?
     @State private var profile: HardwareProfile?
     @State private var search = ""
+    @State private var generatedAt: String?
+    @State private var checking = false
     @StateObject private var runner = ActionRunner()
 
     private var filtered: [GameEntry] {
@@ -41,6 +43,8 @@ struct GamesView: View {
                         }
                     }
                 }
+                Divider()
+                listFooter
             }
             .frame(width: 300)
 
@@ -62,9 +66,43 @@ struct GamesView: View {
             }
         }
         .task {
-            games = Engine.loadGames()
+            reload()
             profile = await Task.detached { Engine.detect() }.value
+            await checkForUpdate(force: false)
         }
+    }
+
+    private var listFooter: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(generatedAt.map { L.t("Updated \($0.prefix(10))", "Mise à jour du \($0.prefix(10))") }
+                     ?? L.t("Built-in list", "Liste intégrée"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if checking { ProgressView().controlSize(.mini) }
+                Button(L.t("Check now", "Vérifier")) { Task { await checkForUpdate(force: true) } }
+                    .controlSize(.small)
+                    .disabled(checking)
+            }
+            Text(L.t("\(games.count) games · MacPlay, AppleGamingWiki, AreWeAntiCheatYet",
+                     "\(games.count) jeux · MacPlay, AppleGamingWiki, AreWeAntiCheatYet"))
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(10)
+    }
+
+    private func reload() {
+        let file = CompatDB.load()
+        games = file?.games ?? []
+        generatedAt = file?.generated_at
+    }
+
+    private func checkForUpdate(force: Bool) async {
+        checking = true
+        if await CompatDB.refresh(force: force) { reload() }
+        checking = false
     }
 }
 
@@ -152,7 +190,10 @@ struct GameDetail: View {
                              + (profile.map { " (\($0.chip))" } ?? "")) {
                         VStack(alignment: .leading, spacing: 8) {
                             DetailRow(label: L.t("Graphics backend", "Backend graphique"),
-                                      value: game.backend.uppercased())
+                                      value: game.backend.isEmpty
+                                        ? L.t("No recommendation yet (D3DMetal is the default)",
+                                              "Pas encore de recommandation (D3DMetal par défaut)")
+                                        : game.backend.uppercased())
                             if let dx = game.dx, !dx.isEmpty {
                                 DetailRow(label: "API", value: dx.uppercased())
                             }
@@ -196,6 +237,7 @@ struct GameDetail: View {
                         }
                     }
 
+                    if !game.backend.isEmpty {
                     HStack {
                         Button(L.t("Apply and restart Steam", "Appliquer et relancer Steam")) {
                             let backend = game.backend
@@ -218,6 +260,7 @@ struct GameDetail: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    }
 
                     if let fixes = game.fixes, !fixes.isEmpty {
                         GroupBox(L.t("Known issues", "Problèmes connus")) {
@@ -238,6 +281,8 @@ struct GameDetail: View {
                         Text(notes).font(.callout).foregroundStyle(.secondary)
                     }
                 }
+
+                CommunityReports(game: game)
 
                 if !runner.log.isEmpty {
                     LogPanel(runner: runner)
@@ -264,5 +309,73 @@ struct DetailRow: View {
                 .textSelection(.enabled)
         }
         .font(.callout)
+    }
+}
+
+/// What the imported sources say about a game, with links back to them.
+struct CommunityReports: View {
+    let game: GameEntry
+
+    var body: some View {
+        if game.wiki_rating != nil || game.anticheat_status != nil || !game.isCurated {
+            GroupBox(L.t("Community reports", "Retours de la communauté")) {
+                VStack(alignment: .leading, spacing: 10) {
+                    if let rating = game.wiki_rating {
+                        reportRow(source: "AppleGamingWiki",
+                                  summary: wikiRatingLabel(rating) + " — " + methodLabel(game.wiki_method),
+                                  detail: game.wiki_reported.map { L.t("Latest report: \($0)", "Dernier retour : \($0)") }
+                                    ?? L.t("Undated report", "Retour non daté"),
+                                  link: game.wiki_url)
+                    }
+                    if let status = game.anticheat_status {
+                        reportRow(source: "AreWeAntiCheatYet",
+                                  summary: ([status] + (game.anticheats ?? [])).joined(separator: " — "),
+                                  detail: L.t("Anti-cheat status under Wine/Proton on Linux",
+                                              "Statut de l'anti-triche sous Wine/Proton sur Linux"),
+                                  link: game.anticheat_url)
+                    }
+                    if !game.isCurated {
+                        Text(game.source == "areweanticheatyet"
+                             ? L.t("Imported from AreWeAntiCheatYet (MIT). MacPlay has not tested this game.",
+                                   "Importé d'AreWeAntiCheatYet (MIT). MacPlay n'a pas testé ce jeu.")
+                             : L.t("Imported from AppleGamingWiki (CC BY-NC-SA 3.0). MacPlay has not tested this game.",
+                                   "Importé d'AppleGamingWiki (CC BY-NC-SA 3.0). MacPlay n'a pas testé ce jeu."))
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(4)
+            }
+        }
+    }
+
+    private func reportRow(source: String, summary: String, detail: String, link: String?) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(source).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(summary)
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if let link, let url = URL(string: link) {
+                Link(L.t("Open", "Ouvrir"), destination: url)
+            }
+        }
+        .font(.callout)
+    }
+
+    private func wikiRatingLabel(_ rating: String) -> String {
+        switch rating {
+        case "perfect": return L.t("Perfect", "Parfait")
+        case "playable": return L.t("Playable", "Jouable")
+        case "runs": return L.t("Runs, with issues", "Se lance, avec des soucis")
+        case "menu": return L.t("Menu only", "Menu seulement")
+        default: return L.t("Unplayable", "Injouable")
+        }
+    }
+
+    private func methodLabel(_ method: String?) -> String {
+        method == "wine" ? "Wine" : "CrossOver"
     }
 }

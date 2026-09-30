@@ -34,7 +34,13 @@ If you find MacPlay useful, those projects deserve your stars first.
 - **Per-chip advice, not generic advice** — reads your exact Mac (M-series generation,
   GPU cores, RAM) and recommends a preset, upscaling and an honest fps estimate per game.
 - **The right graphics engine per game** — D3DMetal / DXMT / DXVK / WineD3D, applied in
-  one click. A curated database ships with ~80 games (from Elden Ring to The Witcher 3).
+  one click. ~80 hand-tuned games (from Elden Ring to The Witcher 3) come with engine,
+  presets and fixes.
+- **A compatibility list that keeps itself current** — the hand-tuned games plus ~1,600
+  more rated by [AppleGamingWiki](https://www.applegamingwiki.com) reports (CrossOver/Wine,
+  with the report date) and anti-cheat blocks from
+  [AreWeAntiCheatYet](https://areweanticheatyet.com). Rebuilt weekly; MacPlay picks up the
+  new list at most once a day.
 - **Launch from the app** — MacPlay boots Steam with your game and watches the session:
   if the game crashes right away, it suggests trying another engine.
 - **Any Windows program, not just Steam** — in *Windows apps*, pick a setup `.exe` (a game,
@@ -90,6 +96,9 @@ What MacPlay **does**:
 - **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
   builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
   MacPlay's own files only.
+- **Downloads the compatibility list** — at most once a day, from this repository on
+  `raw.githubusercontent.com`, into `~/Library/Caches/macplay`. It is plain data (ratings,
+  notes, links); a broken or emptied list is ignored and the built-in one is used.
 - **Sends anonymous ratings** — when you rate a game, the score plus your hardware profile
   (chip, RAM, macOS, engine used) is POSTed to the ratings backend. No account, no personal
   data, and only when you click "Send".

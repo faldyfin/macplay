@@ -69,8 +69,9 @@ struct InstalledView: View {
         }
         .task {
             installed = SteamLibrary.installedGames()
-            knownGames = Dictionary(uniqueKeysWithValues:
-                Engine.loadGames().compactMap { g in g.steam_appid.map { (String($0), g) } })
+            // the list is downloaded: a duplicate Steam id must not crash the app
+            knownGames = Dictionary(Engine.loadGames().compactMap { g in g.steam_appid.map { (String($0), g) } },
+                                    uniquingKeysWith: { first, _ in first })
             profile = await Task.detached { Engine.detect() }.value
             stats = await Hub.fetchStats(appids: installed.map(\.appid))
         }
@@ -139,14 +140,19 @@ struct InstalledDetail: View {
                 // and the fix path after a crash
                 GroupBox(L.t("Graphics engine", "Moteur graphique")) {
                     VStack(alignment: .leading, spacing: 10) {
-                        if known == nil {
+                        if let known, !known.backend.isEmpty, known.backend != "none" {
+                            Text(L.t("Recommended: \(known.backend.uppercased()). Change it only if you hit problems.",
+                                     "Recommandé : \(known.backend.uppercased()). Change seulement en cas de problème."))
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                        } else if known == nil {
                             Text(L.t("This game is not in our database yet. Pick an engine, test it, and if it works your rating will save it for everyone.",
                                      "Ce jeu n'est pas encore dans notre base. Choisis un moteur, teste, et si ça marche ta note l'enregistrera pour tout le monde."))
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
-                        } else if let known {
-                            Text(L.t("Recommended: \(known.backend.uppercased()). Change it only if you hit problems.",
-                                     "Recommandé : \(known.backend.uppercased()). Change seulement en cas de problème."))
+                        } else {
+                            Text(L.t("No engine recommendation for this game yet. Pick one, test it, and your rating will help others.",
+                                     "Pas encore de moteur recommandé pour ce jeu. Choisis-en un, teste, et ta note aidera les autres."))
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
                         }

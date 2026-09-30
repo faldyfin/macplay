@@ -13,7 +13,8 @@ enum Perf {
     }
 
     static func estimate(profile: HardwareProfile?, game: GameEntry) -> Estimate? {
-        guard let p = profile, p.appleSilicon,
+        // imported entries have no RAM class to base an estimate on
+        guard let p = profile, p.appleSilicon, game.isCurated,
               ["gold", "silver", "bronze"].contains(game.status) else { return nil }
 
         // generation: digit right after "M" in "Apple M4 Pro"

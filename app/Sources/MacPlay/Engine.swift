@@ -43,6 +43,19 @@ struct GameEntry: Codable, Identifiable, Hashable {
     let notes_fr: String?
     let settings: [String: TierSettings]?
     let fixes: [GameFix]?
+    // added by tools/update_compat.py; absent in the curated data/games.json
+    let source: String?            // "macplay", "applegamingwiki" or "areweanticheatyet"
+    let source_url: String?
+    let wiki_rating: String?       // AppleGamingWiki: perfect, playable, runs, menu, unplayable
+    let wiki_method: String?       // "crossover" or "wine"
+    let wiki_reported: String?     // date of the latest report (YYYY-MM-DD), if any
+    let wiki_url: String?
+    let anticheat_status: String?  // AreWeAntiCheatYet, Linux/Proton: Supported, Running, Broken, Denied
+    let anticheats: [String]?
+    let anticheat_url: String?
+
+    /// Hand-maintained by MacPlay (engine, presets, fixes) rather than imported.
+    var isCurated: Bool { source == nil || source == "macplay" }
 
     var localizedNotes: String? {
         let n = L.fr ? (notes_fr ?? notes) : notes
@@ -55,6 +68,7 @@ struct GameEntry: Codable, Identifiable, Hashable {
 
 struct GamesFile: Codable {
     let games: [GameEntry]
+    let generated_at: String?
 }
 
 struct DoctorReport {
@@ -130,20 +144,7 @@ enum Engine {
     // MARK: data
 
     static func loadGames() -> [GameEntry] {
-        // Bundled DB first; MACPLAY_DATA=<repo>/data as a dev override when
-        // running the bare executable outside an .app bundle.
-        let candidates = [
-            Bundle.main.resourceURL?.appendingPathComponent("engine/data/games.json"),
-            ProcessInfo.processInfo.environment["MACPLAY_DATA"]
-                .map { URL(fileURLWithPath: $0).appendingPathComponent("games.json") },
-        ].compactMap { $0 }
-        for url in candidates {
-            if let data = try? Data(contentsOf: url),
-               let file = try? JSONDecoder().decode(GamesFile.self, from: data) {
-                return file.games
-            }
-        }
-        return []
+        CompatDB.load()?.games ?? []
     }
 
     // MARK: detect
