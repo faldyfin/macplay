@@ -106,6 +106,9 @@ cd app
 ./build.sh          # → dist/MacPlay.app (SwiftUI via SPM, no Xcode project needed)
 ```
 
+The app icon is drawn in code: `swift icon/make-icon.swift` (from `app/`) regenerates
+`icon/AppIcon.icns`.
+
 The repo also contains the original Python prototype of the engine
 (`macplay.py`, dev tool only) and the games database (`data/games.json`).
 

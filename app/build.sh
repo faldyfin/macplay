@@ -13,6 +13,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/engine/data"
 cp .build/release/MacPlay "$APP/Contents/MacOS/MacPlay"
 # engine is fully native Swift now; only the games DB ships as a resource
 cp ../data/games.json "$APP/Contents/Resources/engine/data/"
+cp icon/AppIcon.icns "$APP/Contents/Resources/"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -22,6 +23,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleExecutable</key><string>MacPlay</string>
   <key>CFBundleIdentifier</key><string>com.macplay.app</string>
   <key>CFBundleName</key><string>MacPlay</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>0.1.0</string>
   <key>CFBundleVersion</key><string>1</string>
