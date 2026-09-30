@@ -52,7 +52,8 @@ If you find MacPlay useful, those projects deserve your stars first.
 
 ## Install
 
-**Requirements:** Apple Silicon (M1 or later), macOS 13+.
+**Requirements:** Apple Silicon (M1 or later), macOS 14.6+ (what the Sikarugir wrapper
+template requires).
 
 1. Download **[MacPlay.dmg](../../releases/latest)**.
 2. Open the dmg, drag MacPlay to Applications.
@@ -135,6 +136,10 @@ This alpha exists to collect feedback:
   to a running Steam instance).
 - One engine per wrapper: all Steam games share Steam's engine choice, and each Windows
   app's games share that app's.
+- New wrappers run Sikarugir's Wine 11 engine, which fixes mouse and keyboard going dead
+  after switching back to a game (Cmd+Tab or the Dock). Its template offers D3DMetal, DXMT
+  and DXVK; WineD3D is gone. Wrappers built by earlier MacPlay versions keep their Wine 10
+  engine and all four choices.
 - Kernel-anticheat multiplayer games will never work through translation.
 
 ## License

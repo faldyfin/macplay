@@ -98,8 +98,7 @@ enum WindowsApps {
         try updatePlist(of: app) { plist in
             plist["CFBundleName"] = name
             plist["CFBundleIdentifier"] = bundleIDPrefix + slug(name)
-            plist["D3DMETAL"] = 1
-            plist["MOLTENVKCX"] = 1
+            Engine.setBackend("d3dmetal", in: &plist)
         }
 
         let before = exeFiles(in: app.driveC)

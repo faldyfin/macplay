@@ -87,13 +87,13 @@ enum Engine {
     }
 
     static let templateDownload = Download(
-        name: "Template-1.0.11.tar.xz",
-        url: "https://github.com/Sikarugir-App/Wrapper/releases/download/v1.0/Template-1.0.11.tar.xz",
-        sha256: "9fa15479e7ff6abd99c1d07be285fb95f41fc6991586502427152b1f7d6ccb8a")
+        name: "Template-1.0.20.tar.xz",
+        url: "https://github.com/Sikarugir-App/Wrapper/releases/download/v1.0/Template-1.0.20.tar.xz",
+        sha256: "68bcaa9e6de4732bcb2eca9700ed12d1d0857b1748d60494911a19e17dd9b962")
     static let engineDownload = Download(
-        name: "WS12WineSikarugir10.0_6.tar.xz",
-        url: "https://github.com/Sikarugir-App/Engines/releases/download/v1.0/WS12WineSikarugir10.0_6.tar.xz",
-        sha256: "9da7ee0cbf386522f3a9906943726d9c3c125dbbd9ab120e3cde80e88d6091b2")
+        name: "WS12WineSikarugir11.0.tar.xz",
+        url: "https://github.com/Sikarugir-App/Engines/releases/download/v1.0/WS12WineSikarugir11.0.tar.xz",
+        sha256: "dcb3de3acab2eaf37591768dc7f6f6c20fa8e6b69c88ddd61e63798c02befcf9")
     static let winetricksDownload = Download(
         name: "winetricks-f3890f67",
         url: "https://raw.githubusercontent.com/Sikarugir-App/winetricks/f3890f670867b5ffbc3938726db45c0f7d16c8ba/src/winetricks",
@@ -206,10 +206,7 @@ enum Engine {
         if installed {
             engineVersion = (try? String(contentsOfFile: wrapperPath + "/Contents/SharedSupport/wine/version", encoding: .utf8))?
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            if let plist = readWrapperPlist() {
-                let active = backendKeys.values.filter { (plist[$0] as? Int) == 1 || (plist[$0] as? Bool) == true }
-                if !active.isEmpty { backend = active.joined(separator: ", ") }
-            }
+            backend = activeBackend(of: wrapperPath).uppercased()
         }
         let alive = sh("/usr/bin/pgrep", ["-f", wrapperPath + ".*wineserver"]).code == 0
 
@@ -241,18 +238,42 @@ enum Engine {
         try data.write(to: URL(fileURLWithPath: wrapper + "/Contents/Info.plist"))
     }
 
-    /// Set the graphics backend toggles for a wrapper. Returns the applied key.
+    /// Templates up to 1.0.11 have a DXMT switch and fall back to WineD3D with every
+    /// switch off. Newer ones (1.0.20 checked) dropped the DXMT key: DXMT is what runs
+    /// when D3DMetal and DXVK are both off, and WineD3D is no longer offered.
+    private static func hasLegacyBackendSwitches(_ plist: [String: Any]) -> Bool {
+        plist["DXMT"] != nil
+    }
+
+    static func backendChoices(for wrapper: String) -> [(id: String, label: String)] {
+        let choices = [(id: "d3dmetal", label: "D3DMetal"), (id: "dxmt", label: "DXMT"), (id: "dxvk", label: "DXVK")]
+        let legacy = readWrapperPlist(at: wrapper).map(hasLegacyBackendSwitches) ?? false
+        return legacy ? choices + [(id: "wined3d", label: "WineD3D")] : choices
+    }
+
+    /// Set the graphics backend toggles in a wrapper plist. Returns the backend that will run.
+    @discardableResult
+    static func setBackend(_ backend: String, in plist: inout [String: Any]) -> String {
+        if hasLegacyBackendSwitches(plist) {
+            for key in backendKeys.values { plist[key] = 0 }
+            if let key = backendKeys[backend] { plist[key] = 1 }
+            plist["MOLTENVKCX"] = 1
+            return backendKeys[backend] ?? "WineD3D"
+        }
+        plist["D3DMETAL"] = backend == "d3dmetal" ? 1 : 0
+        plist["DXVK"] = backend == "dxvk" ? 1 : 0
+        return backend == "d3dmetal" ? "D3DMETAL" : backend == "dxvk" ? "DXVK" : "DXMT"
+    }
+
     static func applyBackend(_ backend: String, wrapper: String = wrapperPath) throws -> String {
         guard var plist = readWrapperPlist(at: wrapper) else {
             throw fail(wrapper == wrapperPath
                        ? L.t("Wrapper not found — install Steam first.", "Wrapper introuvable — installe Steam d'abord.")
                        : L.t("Wrapper not found.", "Wrapper introuvable."))
         }
-        for key in backendKeys.values { plist[key] = 0 }
-        if let key = backendKeys[backend] { plist[key] = 1 }
-        plist["MOLTENVKCX"] = 1
+        let applied = setBackend(backend, in: &plist)
         try writeWrapperPlist(plist, at: wrapper)
-        return backendKeys[backend] ?? "WineD3D"
+        return applied
     }
 
     // MARK: process helpers
@@ -295,9 +316,10 @@ enum Engine {
 
     static func activeBackend(of wrapper: String) -> String {
         guard let plist = readWrapperPlist(at: wrapper) else { return "wined3d" }
-        for (name, key) in backendKeys where (plist[key] as? Int) == 1 || (plist[key] as? Bool) == true {
-            return name
-        }
+        func isOn(_ key: String) -> Bool { (plist[key] as? Int) == 1 || (plist[key] as? Bool) == true }
+        if isOn("D3DMETAL") { return "d3dmetal" }
+        if isOn("DXVK") { return "dxvk" }
+        if isOn("DXMT") || !hasLegacyBackendSwitches(plist) { return "dxmt" }
         return "wined3d"
     }
 
@@ -509,12 +531,23 @@ enum Engine {
     }
 
     /// Environment for running a wrapper's wine directly, outside its launcher.
+    /// Mirrors what the launcher sets for the Wine 11 engine: its wineserver has no
+    /// LC_RPATH, so it needs the library fallback path, and the engine only starts
+    /// Windows programs with SikarugirAppWine11=1. macOS strips DYLD_* when a shell
+    /// starts, so winetricks gets the path as WINETRICKS_FALLBACK_LIBRARY_PATH and
+    /// re-exports it itself.
     static func wineEnv(for wrapper: String) -> [String: String] {
         let wine = wrapper + "/Contents/SharedSupport/wine"
+        let frameworks = wrapper + "/Contents/Frameworks"
+        let libraries = [wine + "/lib", wine + "/lib64", frameworks, frameworks + "/GStreamer.framework/Libraries",
+                         "/usr/lib", "/usr/libexec", "/usr/lib/system"].joined(separator: ":")
         return [
             "WINEPREFIX": wrapper + "/Contents/SharedSupport/prefix",
             "WINE": wine + "/bin/wine",
             "WINESERVER": wine + "/bin/wineserver",
+            "DYLD_FALLBACK_LIBRARY_PATH": libraries,
+            "WINETRICKS_FALLBACK_LIBRARY_PATH": libraries,
+            "SikarugirAppWine11": "1",
             "PATH": wine + "/bin:" + wrapper + "/Contents/Configure.app/Contents/Resources:"
                 + (ProcessInfo.processInfo.environment["PATH"] ?? "/usr/bin:/bin"),
         ]
@@ -543,16 +576,6 @@ enum Engine {
         let wineDst = wrapper + "/Contents/SharedSupport/wine"
         try? fm.removeItem(atPath: wineDst)
         try fm.moveItem(atPath: work + "/wswine.bundle", toPath: wineDst)
-
-        // dylib fix: SIP strips DYLD_FALLBACK_LIBRARY_PATH outside the launcher,
-        // so wine's @rpath lookups need the wrapper Frameworks visible from wine/lib
-        let fwDir = wrapper + "/Contents/Frameworks"
-        for name in (try? fm.contentsOfDirectory(atPath: fwDir)) ?? [] where name.hasSuffix(".dylib") {
-            let link = wineDst + "/lib/" + name
-            if !fm.fileExists(atPath: link) {
-                try? fm.createSymbolicLink(atPath: link, withDestinationPath: "../../../Frameworks/" + name)
-            }
-        }
         sh("/usr/bin/xattr", ["-drs", "com.apple.quarantine", wrapper])
 
         // wine prefix — the launcher idles in its GUI event loop after the work
@@ -597,8 +620,7 @@ enum Engine {
         plist["CFBundleIdentifier"] = "com.macplay.steam"
         plist["Program Name and Path"] = "/Program Files (x86)/Steam/Steam.exe"
         plist["Program Flags"] = steamFlags
-        plist["D3DMETAL"] = 1
-        plist["MOLTENVKCX"] = 1
+        setBackend("d3dmetal", in: &plist)
         try writeWrapperPlist(plist)
 
         emit(L.t("Launching Steam — log in and install your games!",

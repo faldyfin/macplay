@@ -266,7 +266,7 @@ struct AppDetail: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Picker("", selection: $chosenBackend) {
-                            ForEach(backendChoices, id: \.id) { c in
+                            ForEach(Engine.backendChoices(for: app.wrapperPath), id: \.id) { c in
                                 Text(c.label).tag(c.id)
                             }
                         }

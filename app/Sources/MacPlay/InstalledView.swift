@@ -77,13 +77,6 @@ struct InstalledView: View {
     }
 }
 
-let backendChoices: [(id: String, label: String)] = [
-    ("d3dmetal", "D3DMetal"),
-    ("dxmt", "DXMT"),
-    ("dxvk", "DXVK"),
-    ("wined3d", "WineD3D"),
-]
-
 struct InstalledDetail: View {
     let game: InstalledGame
     let known: GameEntry?
@@ -158,7 +151,7 @@ struct InstalledDetail: View {
                                 .foregroundStyle(.secondary)
                         }
                         Picker("", selection: $chosenBackend) {
-                            ForEach(backendChoices, id: \.id) { c in
+                            ForEach(Engine.backendChoices(for: Engine.wrapperPath), id: \.id) { c in
                                 Text(c.label).tag(c.id)
                             }
                         }
