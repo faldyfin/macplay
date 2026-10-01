@@ -61,7 +61,8 @@ The sidebar item is called "Compatible Games", so it is not mistaken for the ins
 **Acceptance Scenarios**:
 
 1. **Given** the app, **When** the player reads the sidebar, **Then** the tab reads "Compatible
-   Games" ("Jeux compatibles" in French), distinct from "My games".
+   Games" ("Jeux compatibles" in French), distinct from the installed games (listed in the Steam
+   section since feature 007).
 
 ### Edge Cases
 

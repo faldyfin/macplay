@@ -26,7 +26,8 @@ download a game in TapTap and start it.
 
 1. **Given** no Windows app is installed, **When** the player picks a setup file and confirms a
    name, **Then** MacPlay prepares a separate environment for it, runs the installer and, when the
-   installer closes, shows the program in the Windows apps list with its main program filled in.
+   installer closes, shows the program in its section's list (My Games or My Apps since feature
+   007) with its main program filled in.
 2. **Given** an installed app, **When** the player clicks Launch, **Then** the program opens with
    the chosen graphics engine, and games it starts use that engine too.
 3. **Given** the installer started the program by itself, **When** installation finishes,

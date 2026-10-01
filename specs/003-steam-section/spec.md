@@ -102,5 +102,6 @@ swap, disk), without Steam controls.
 
 - The tip in the README for a misbehaving Steam ("Restart Steam cleanly") now points to the Steam
   section.
-- Launching a Steam game from Compatible Games or My games still restarts Steam with that game, as
+- Launching a Steam game from Compatible Games or from the Steam section's installed games
+  (feature 007) still restarts Steam with that game, as
   before.
