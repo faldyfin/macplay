@@ -74,9 +74,10 @@ Rationale: a wrong "runs great" wastes an evening; a dated source lets the user 
 Rationale: most bugs in this project's history were assumptions (environment variables, engine
 layouts, cached icons) that one check would have caught.
 
-### VII. Bilingual UI, Docs in Sync
+### VII. Multilingual UI, Docs in Sync
 
-- Every user-facing string MUST exist in English and French through `L.t(en, fr)`.
+- Every user-facing string MUST exist in English, French and Indonesian through
+  `L.t(en, fr, id)`.
 - Every user-visible, security-relevant or licensing change MUST update `README.md` in the same
   change. Specs under `specs/` describe what was built and are kept current with the code.
 
@@ -117,4 +118,4 @@ Rationale: the README is the contract with users; specs are the contract with co
   or materially expanded guidance, PATCH for wording and clarifications.
 - Runtime guidance for agents lives in `.claude/skills/` (Spec Kit) and `README.md`.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-01 | **Last Amended**: 2026-10-01
+**Version**: 1.1.0 | **Ratified**: 2026-10-01 | **Last Amended**: 2026-10-01
