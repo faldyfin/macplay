@@ -18,7 +18,7 @@ struct InstalledDetail: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                ArtImage(appid: Int(game.appid), kind: .banner, title: "")
+                ArtImage(appid: Int(game.appid), kind: .banner, title: "", key: PlayTime.steamKey(game.appid))
                     .frame(height: 220)
                     .frame(maxWidth: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))

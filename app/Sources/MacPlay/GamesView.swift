@@ -151,7 +151,7 @@ struct GameDetail: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 if let appid = game.steam_appid {
-                    ArtImage(appid: appid, kind: .banner, title: "")
+                    ArtImage(appid: appid, kind: .banner, title: "", key: PlayTime.steamKey(String(appid)))
                         .frame(height: 220)
                         .frame(maxWidth: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))

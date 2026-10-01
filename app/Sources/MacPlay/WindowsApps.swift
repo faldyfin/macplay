@@ -297,6 +297,9 @@ enum WindowsApps {
             plist["CFBundleName"] = name
             plist["CFBundleIdentifier"] = bundleIDPrefix + slug(name)
         }
+        let oldKey = PlayTime.appKey(app.name), newKey = PlayTime.appKey(name)
+        ChosenArt.shared.move(from: oldKey, to: newKey)
+        PlayTime.shared.rename(from: oldKey, to: newKey)
         return renamed
     }
 
@@ -310,6 +313,7 @@ enum WindowsApps {
                      "Menghapus wrapper dan semua yang terinstal di dalamnya…"))
             try? FileManager.default.removeItem(atPath: app.wrapperPath)
             let gone = !FileManager.default.fileExists(atPath: app.wrapperPath)
+            if gone { ChosenArt.shared.removeAll(for: PlayTime.appKey(app.name)) }
             emit(gone ? L.t("\(app.name) is uninstalled.", "\(app.name) est désinstallé.", "\(app.name) sudah dihapus.")
                       : L.t("Could not delete the wrapper.", "Impossible de supprimer le wrapper.", "Wrapper tidak bisa dihapus."))
             done(gone ? 0 : 1)

@@ -32,7 +32,9 @@ If you find MacPlay useful, those projects deserve your stars first.
 - **A launcher-style Home** — your most-played game up front with Play, your games and
   well-rated ones as cover cards with their official Steam artwork, search, and cards for
   what's running, your Mac, play time and recently added. Play time is counted while MacPlay
-  is open and stays on this Mac.
+  is open and stays on this Mac. No artwork for a game (Heartopia from TapTap)? *Choose a cover*
+  opens Google Images in your browser; drag the image you like back into MacPlay, paste it or
+  pick a file. Right-click any card or the banner to change or reset its artwork.
 - **One-click Steam setup** — downloads and assembles the whole Wine + Steam stack
   (engine, prefix, fonts, known workarounds). Launch, stop, reinstall or uninstall it just as easily;
   your installed Steam games are listed right in the Steam section.
@@ -89,7 +91,8 @@ What MacPlay **does**:
 
 - **Writes only to folders you already own** — `~/Applications/Sikarugir/` (the Steam
   wrapper, plus one wrapper per Windows program you install) and `~/Library/Caches/macplay`
-  + `~/.cache/winetricks` (downloads, installer logs, game artwork). It never writes to `/System`,
+  + `~/.cache/winetricks` (downloads, installer logs, game artwork), and
+  `~/Library/Application Support/MacPlay` (covers you choose). It never writes to `/System`,
   `/Library`, or anywhere privileged.
 - **Runs the Windows installers you pick** inside that program's own wrapper. What the
   installer then does is up to the installer, as on Windows.
@@ -115,7 +118,10 @@ What MacPlay **does**:
 - **Downloads game artwork** — cover and banner images by Steam app id from Steam's image
   server, `cdn.akamai.steamstatic.com`, cached in `~/Library/Caches/macplay/art`. The request
   tells Steam's server which games' images are shown; nothing else is sent. An image Steam
-  doesn't have is asked for again after 7 days.
+  doesn't have is asked for again after 7 days. MacPlay never reads Google's results itself: *Search
+  Google Images* only opens your browser. If you drop or paste a *link* to an image, MacPlay
+  downloads that one file over HTTPS from the site it points to; anything that isn't an image is
+  refused, and what is kept is re-encoded to a plain JPEG.
 - **Counts play time locally** — every 30 seconds while MacPlay is open it lists running
   processes to see which game or program is up, and keeps the totals in its own preferences.
   Never sent anywhere.

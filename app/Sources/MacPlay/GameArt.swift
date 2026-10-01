@@ -66,7 +66,10 @@ struct ArtImage: View {
     let appid: Int?
     let kind: GameArt.Kind
     let title: String
+    /// Play-time key; artwork the player chose for it wins over Steam's.
+    var key: String? = nil
 
+    @ObservedObject private var chosen = ChosenArt.shared
     @State private var image: NSImage?
 
     var body: some View {
@@ -81,8 +84,15 @@ struct ArtImage: View {
                 }
             }
             .clipped()
-        .task(id: appid) {
-            guard let appid else { return }
+        .task(id: "\(appid ?? 0)|\(key ?? "")|\(chosen.revision)") {
+            if let key, let mine = chosen.image(key, kind) {
+                image = mine
+                return
+            }
+            guard let appid else {
+                image = nil
+                return
+            }
             let loaded = await GameArt.image(appid: appid, kind: kind)
             withAnimation(.easeOut(duration: 0.25)) { image = loaded }
         }

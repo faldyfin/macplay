@@ -34,6 +34,18 @@ final class PlayTime: ObservableObject {
         sample(counting: false)  // show what runs right away, without adding time
     }
 
+    /// Keeps a program's time when it is renamed; merges if the new name has history.
+    func rename(from oldKey: String, to newKey: String) {
+        guard oldKey != newKey, let old = entries.removeValue(forKey: oldKey) else { return }
+        if let existing = entries[newKey] {
+            entries[newKey] = Entry(seconds: existing.seconds + old.seconds,
+                                    lastPlayed: max(existing.lastPlayed, old.lastPlayed))
+        } else {
+            entries[newKey] = old
+        }
+        Self.save(entries)
+    }
+
     var totalSeconds: Double { entries.values.reduce(0) { $0 + $1.seconds } }
 
     var mostPlayed: [(key: String, entry: Entry)] {

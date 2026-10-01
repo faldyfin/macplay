@@ -31,6 +31,7 @@ struct HomeItem: Identifiable, Hashable {
 
 struct HomeView: View {
     @ObservedObject private var playTime = PlayTime.shared
+    @ObservedObject private var chosen = ChosenArt.shared
     @StateObject private var session = GameSession()
     @StateObject private var runner = ActionRunner()
 
@@ -41,6 +42,7 @@ struct HomeView: View {
     @State private var profile: HardwareProfile?
     @State private var steamRunning = false
     @State private var search = ""
+    @State private var coverTarget: CoverTarget?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -84,6 +86,7 @@ struct HomeView: View {
             .navigationDestination(for: HomeRoute.self) { route in destination(route) }
         }
         .task { await reload() }
+        .sheet(item: $coverTarget) { CoverPicker(target: $0) }
     }
 
     // MARK: data
@@ -212,7 +215,7 @@ struct HomeView: View {
             ForEach(matches) { match in
                 NavigationLink(value: match.route) {
                     HStack(spacing: 14) {
-                        ArtImage(appid: match.appid, kind: .banner, title: match.title)
+                        ArtImage(appid: match.appid, kind: .banner, title: match.title, key: match.playKey)
                             .frame(width: 128, height: 48)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         VStack(alignment: .leading, spacing: 4) {
@@ -255,7 +258,7 @@ struct HomeView: View {
 
     private func hero(_ featured: HomeItem) -> some View {
         ZStack(alignment: .bottomLeading) {
-            ArtImage(appid: featured.appid, kind: .banner, title: "")
+            ArtImage(appid: featured.appid, kind: .banner, title: "", key: featured.playKey)
                 .frame(height: 300)
                 .frame(maxWidth: .infinity)
             // scrim: keeps the title legible on any artwork
@@ -293,6 +296,46 @@ struct HomeView: View {
             .padding(28)
         }
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(alignment: .topTrailing) {
+            chooseArtButton(featured, .banner).padding(20)
+        }
+        .contextMenu { artMenu(featured, .banner) }
+    }
+
+    /// "Change cover…" / "Change banner…" and the reset, for installed games and programs.
+    @ViewBuilder
+    private func artMenu(_ item: HomeItem, _ kind: GameArt.Kind) -> some View {
+        if let key = item.playKey {
+            Button(kind == .cover ? L.t("Change cover…", "Changer la jaquette…", "Ganti sampul…")
+                                  : L.t("Change banner…", "Changer la bannière…", "Ganti banner…")) {
+                coverTarget = CoverTarget(key: key, title: item.title, kind: kind)
+            }
+            if chosen.has(key, kind) {
+                Button(L.t("Use default artwork", "Illustration par défaut", "Pakai gambar bawaan")) {
+                    chosen.remove(key, kind)
+                }
+            }
+        }
+    }
+
+    /// On a program's artwork until the player picks one; Steam games have Steam's.
+    @ViewBuilder
+    private func chooseArtButton(_ item: HomeItem, _ kind: GameArt.Kind) -> some View {
+        if case .program = item.route, let key = item.playKey, !chosen.has(key, kind) {
+            Button {
+                coverTarget = CoverTarget(key: key, title: item.title, kind: kind)
+            } label: {
+                Label(kind == .cover ? L.t("Choose a cover", "Choisir une jaquette", "Pilih sampul")
+                                     : L.t("Choose a banner", "Choisir une bannière", "Pilih banner"),
+                      systemImage: "photo")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .foregroundStyle(.white)
+                    .background(Theme.accent, in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private func actionLabel(_ item: HomeItem) -> String {
@@ -338,7 +381,7 @@ struct HomeView: View {
     private func card(_ item: HomeItem) -> some View {
         NavigationLink(value: item.route) {
             VStack(alignment: .leading, spacing: 8) {
-                ArtImage(appid: item.appid, kind: .cover, title: item.title)
+                ArtImage(appid: item.appid, kind: .cover, title: item.title, key: item.playKey)
                     .frame(width: 150, height: 225)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .overlay(alignment: .topLeading) {
@@ -355,6 +398,11 @@ struct HomeView: View {
             }
         }
         .buttonStyle(.plain)
+        // over the link rather than inside it, so the button gets its own click
+        .overlay(alignment: .top) {
+            chooseArtButton(item, .cover).frame(width: 150, height: 210, alignment: .bottom)
+        }
+        .contextMenu { artMenu(item, .cover) }
     }
 
     @ViewBuilder
