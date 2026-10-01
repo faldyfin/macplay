@@ -58,7 +58,7 @@ If you find MacPlay useful, those projects deserve your stars first.
 - **Pick the screen games open on** — with an external display connected, choose it or the
   built-in one in *My Mac*. Wine opens games on the macOS main display, so MacPlay makes the
   chosen screen the main display while games run, then puts your arrangement back.
-- **English & French** UI, follows your system language.
+- **English, French & Indonesian** UI, follows your system language.
 
 ![MacPlay — My Mac tab](docs/app-dashboard.png)
 

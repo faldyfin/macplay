@@ -40,9 +40,11 @@ struct AppsView: View {
                                 .foregroundStyle(.tertiary)
                             Text(category == .game
                                  ? L.t("No games yet.\nInstall a game or a launcher from its setup .exe.",
-                                       "Aucun jeu.\nInstalle un jeu ou un launcher depuis son .exe d'installation.")
+                                       "Aucun jeu.\nInstalle un jeu ou un launcher depuis son .exe d'installation.",
+                                       "Belum ada game.\nInstal game atau launcher dari file .exe instalasinya.")
                                  : L.t("No apps yet.\nInstall a Windows program from its setup .exe.",
-                                       "Aucune app.\nInstalle un programme Windows depuis son .exe d'installation."))
+                                       "Aucune app.\nInstalle un programme Windows depuis son .exe d'installation.",
+                                       "Belum ada app.\nInstal program Windows dari file .exe instalasinya."))
                                 .multilineTextAlignment(.center)
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
@@ -54,8 +56,8 @@ struct AppsView: View {
                     chooseInstaller()
                 } label: {
                     Label(category == .game
-                          ? L.t("Install a Windows game…", "Installer un jeu Windows…")
-                          : L.t("Install a Windows program…", "Installer un programme Windows…"),
+                          ? L.t("Install a Windows game…", "Installer un jeu Windows…", "Instal game Windows…")
+                          : L.t("Install a Windows program…", "Installer un programme Windows…", "Instal program Windows…"),
                           systemImage: "plus")
                 }
                 .disabled(runner.running)
@@ -88,9 +90,11 @@ struct AppsView: View {
                         .foregroundStyle(.tertiary)
                     Text(category == .game
                          ? L.t("Install a Windows game or game launcher (TapTap, Battle.net…) from its .exe",
-                               "Installe un jeu ou un launcher Windows (TapTap, Battle.net…) depuis son .exe")
+                               "Installe un jeu ou un launcher Windows (TapTap, Battle.net…) depuis son .exe",
+                               "Instal game atau launcher game Windows (TapTap, Battle.net…) dari file .exe-nya")
                          : L.t("Install any other Windows program from its .exe",
-                               "Installe n'importe quel autre programme Windows depuis son .exe"))
+                               "Installe n'importe quel autre programme Windows depuis son .exe",
+                               "Instal program Windows lainnya dari file .exe-nya"))
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -114,9 +118,11 @@ struct AppsView: View {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
         guard let url = pickExe(message: category == .game
                                     ? L.t("Choose the game's or launcher's setup .exe",
-                                          "Choisis le .exe d'installation du jeu ou du launcher")
+                                          "Choisis le .exe d'installation du jeu ou du launcher",
+                                          "Pilih file .exe instalasi game atau launcher")
                                     : L.t("Choose the program's setup .exe",
-                                          "Choisis le .exe d'installation du programme"),
+                                          "Choisis le .exe d'installation du programme",
+                                          "Pilih file .exe instalasi program"),
                                 startIn: downloads)
         else { return }
         selected = nil
@@ -136,15 +142,15 @@ struct AppsView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text(installCategory == .game
-                     ? L.t("Install a Windows game", "Installer un jeu Windows")
-                     : L.t("Install a Windows program", "Installer un programme Windows"))
+                     ? L.t("Install a Windows game", "Installer un jeu Windows", "Instal game Windows")
+                     : L.t("Install a Windows program", "Installer un programme Windows", "Instal program Windows"))
                     .font(.title.bold())
 
                 GroupBox {
                     VStack(alignment: .leading, spacing: 10) {
-                        DetailRow(label: L.t("Installer", "Installeur"), value: url.lastPathComponent)
+                        DetailRow(label: L.t("Installer", "Installeur", "File instalasi"), value: url.lastPathComponent)
                         HStack(alignment: .firstTextBaseline) {
-                            Text(L.t("Name", "Nom")).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
+                            Text(L.t("Name", "Nom", "Nama")).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
                             TextField("", text: $newName)
                                 .textFieldStyle(.roundedBorder)
                                 .disabled(started)
@@ -154,13 +160,14 @@ struct AppsView: View {
                             Text(problem).font(.caption).foregroundStyle(.orange)
                         }
                         HStack(alignment: .firstTextBaseline) {
-                            Text(L.t("Category", "Catégorie")).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
+                            Text(L.t("Category", "Catégorie", "Kategori")).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
                             CategoryPicker(selection: $installCategory)
                                 .disabled(started)
                         }
                         .font(.callout)
                         Text(L.t("MacPlay builds a separate Wine wrapper for it in ~/Applications/Sikarugir (~1.4 GB on disk; ~250 MB download the first time), runs the installer, then finds the installed program. Games you install from inside it — from a launcher, say — live in that wrapper too.",
-                                 "MacPlay crée un wrapper Wine séparé dans ~/Applications/Sikarugir (~1,4 Go sur le disque ; ~250 Mo téléchargés la première fois), lance l'installeur, puis trouve le programme installé. Les jeux que tu installes depuis celui-ci — depuis un launcher par exemple — vivent aussi dans ce wrapper."))
+                                 "MacPlay crée un wrapper Wine séparé dans ~/Applications/Sikarugir (~1,4 Go sur le disque ; ~250 Mo téléchargés la première fois), lance l'installeur, puis trouve le programme installé. Les jeux que tu installes depuis celui-ci — depuis un launcher par exemple — vivent aussi dans ce wrapper.",
+                                 "MacPlay membuat wrapper Wine tersendiri untuknya di ~/Applications/Sikarugir (~1,4 GB di disk; unduhan ~250 MB saat pertama kali), menjalankan installer, lalu mencari program yang terpasang. Game yang kamu instal dari dalamnya — misalnya dari launcher — juga tinggal di wrapper itu."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -171,22 +178,22 @@ struct AppsView: View {
                 HStack {
                     if finished {
                         if runner.lastExit == 0 {
-                            Button(L.t("Show \(newName)", "Voir \(newName)")) { showInstalled() }
+                            Button(L.t("Show \(newName)", "Voir \(newName)", "Lihat \(newName)")) { showInstalled() }
                                 .buttonStyle(.borderedProminent)
                         } else {
-                            Button(L.t("Close", "Fermer")) { showInstalled() }
+                            Button(L.t("Close", "Fermer", "Tutup")) { showInstalled() }
                         }
                     } else {
-                        Button(L.t("Install", "Installer")) {
+                        Button(L.t("Install", "Installer", "Instal")) {
                             let name = newName
                             let chosen = installCategory
-                            runner.start(L.t("Installing \(name)", "Installation de \(name)")) { emit, doneCb in
+                            runner.start(L.t("Installing \(name)", "Installation de \(name)", "Menginstal \(name)")) { emit, doneCb in
                                 WindowsApps.install(installer: url, name: name, category: chosen, emit: emit, done: doneCb)
                             }
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(problem != nil || runner.running)
-                        Button(L.t("Cancel", "Annuler")) { installer = nil }
+                        Button(L.t("Cancel", "Annuler", "Batal")) { installer = nil }
                             .disabled(runner.running)
                     }
                 }
@@ -239,14 +246,14 @@ struct AppDetail: View {
                     Spacer()
                     if running {
                         Button {
-                            runner.start(L.t("Stopping \(app.name)", "Arrêt de \(app.name)")) { emit, doneCb in
+                            runner.start(L.t("Stopping \(app.name)", "Arrêt de \(app.name)", "Menghentikan \(app.name)")) { emit, doneCb in
                                 DispatchQueue.global(qos: .userInitiated).async {
                                     WindowsApps.stop(app)
                                     doneCb(0)
                                 }
                             }
                         } label: {
-                            Label(L.t("Stop", "Arrêter"), systemImage: "stop.fill")
+                            Label(L.t("Stop", "Arrêter", "Hentikan"), systemImage: "stop.fill")
                         }
                         .controlSize(.large)
                         .disabled(runner.running)
@@ -254,7 +261,7 @@ struct AppDetail: View {
                         Button {
                             WindowsApps.launch(app)
                         } label: {
-                            Label(L.t("Launch", "Lancer"), systemImage: "play.fill")
+                            Label(L.t("Launch", "Lancer", "Jalankan"), systemImage: "play.fill")
                         }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
@@ -264,32 +271,34 @@ struct AppDetail: View {
 
                 if running {
                     Label(L.t("Running. Games you start from it use the engine below; Stop closes them too.",
-                              "En cours. Les jeux lancés depuis lui utilisent le moteur ci-dessous ; Arrêter les ferme aussi."),
+                              "En cours. Les jeux lancés depuis lui utilisent le moteur ci-dessous ; Arrêter les ferme aussi.",
+                              "Sedang berjalan. Game yang kamu mulai dari sini memakai engine di bawah; Hentikan juga menutupnya."),
                           systemImage: "checkmark.circle.fill")
                         .font(.callout)
                         .foregroundStyle(.green)
                 }
 
-                GroupBox(L.t("Program", "Programme")) {
+                GroupBox(L.t("Program", "Programme", "Program")) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .firstTextBaseline) {
                             Text(program.map { "C:" + $0.replacingOccurrences(of: "/", with: "\\") }
-                                 ?? L.t("No program set yet.", "Aucun programme défini."))
+                                 ?? L.t("No program set yet.", "Aucun programme défini.", "Belum ada program yang dipilih."))
                                 .font(.system(.callout, design: .monospaced))
                                 .textSelection(.enabled)
                             Spacer()
-                            Button(L.t("Change…", "Changer…")) { changeProgram() }
+                            Button(L.t("Change…", "Changer…", "Ganti…")) { changeProgram() }
                                 .disabled(runner.running)
                         }
                         HStack {
-                            TextField(L.t("Launch options (optional)", "Options de lancement (optionnel)"), text: $flags)
+                            TextField(L.t("Launch options (optional)", "Options de lancement (optionnel)", "Opsi peluncuran (opsional)"), text: $flags)
                                 .textFieldStyle(.roundedBorder)
                                 .font(.system(.callout, design: .monospaced))
-                            Button(L.t("Save", "Enregistrer")) { saveFlags() }
+                            Button(L.t("Save", "Enregistrer", "Simpan")) { saveFlags() }
                                 .disabled(flags == savedFlags)
                         }
                         Text(L.t("Passed to the program when it starts, at the next launch.",
-                                 "Passées au programme à son démarrage, au prochain lancement."))
+                                 "Passées au programme à son démarrage, au prochain lancement.",
+                                 "Diteruskan ke program saat mulai, pada peluncuran berikutnya."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         if let problem {
@@ -300,10 +309,11 @@ struct AppDetail: View {
                     .padding(4)
                 }
 
-                GroupBox(L.t("Graphics engine", "Moteur graphique")) {
+                GroupBox(L.t("Graphics engine", "Moteur graphique", "Engine grafis")) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(L.t("Used by this program and every game it starts. If a game crashes or shows a black screen, try another one.",
-                                 "Utilisé par ce programme et chaque jeu qu'il lance. Si un jeu plante ou reste noir, essaie-en un autre."))
+                                 "Utilisé par ce programme et chaque jeu qu'il lance. Si un jeu plante ou reste noir, essaie-en un autre.",
+                                 "Dipakai oleh program ini dan setiap game yang dijalankannya. Kalau game crash atau layarnya hitam, coba engine lain."))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Picker("", selection: $chosenBackend) {
@@ -314,12 +324,13 @@ struct AppDetail: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                         HStack {
-                            Button(L.t("Apply", "Appliquer")) { applyBackend() }
+                            Button(L.t("Apply", "Appliquer", "Terapkan")) { applyBackend() }
                                 .disabled(chosenBackend == activeBackend)
                             Text(running
-                                 ? L.t("Stop and relaunch for it to take effect.", "Arrête puis relance pour l'appliquer.")
+                                 ? L.t("Stop and relaunch for it to take effect.", "Arrête puis relance pour l'appliquer.", "Hentikan lalu jalankan lagi agar berlaku.")
                                  : L.t("Currently active: \(activeBackend.uppercased())",
-                                       "Actif actuellement : \(activeBackend.uppercased())"))
+                                       "Actif actuellement : \(activeBackend.uppercased())",
+                                       "Aktif sekarang: \(activeBackend.uppercased())"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -329,7 +340,7 @@ struct AppDetail: View {
                 }
 
                 HStack(alignment: .firstTextBaseline) {
-                    Text(L.t("Listed in", "Classé dans")).foregroundStyle(.secondary)
+                    Text(L.t("Listed in", "Classé dans", "Tercantum di")).foregroundStyle(.secondary)
                     // writes only when the player picks the other section
                     CategoryPicker(selection: Binding(get: { app.category }, set: { moveTo($0) }))
                         .frame(maxWidth: 260)
@@ -337,30 +348,31 @@ struct AppDetail: View {
                 .font(.callout)
 
                 HStack {
-                    Button(L.t("Rename…", "Renommer…")) {
+                    Button(L.t("Rename…", "Renommer…", "Ganti nama…")) {
                         newName = app.name
                         renaming = true
                     }
                     .disabled(running || runner.running)
-                    .alert(L.t("Rename \(app.name)", "Renommer \(app.name)"), isPresented: $renaming) {
-                        TextField(L.t("Name", "Nom"), text: $newName)
-                        Button(L.t("Rename", "Renommer")) { rename() }
-                        Button(L.t("Cancel", "Annuler"), role: .cancel) {}
+                    .alert(L.t("Rename \(app.name)", "Renommer \(app.name)", "Ganti nama \(app.name)"), isPresented: $renaming) {
+                        TextField(L.t("Name", "Nom", "Nama"), text: $newName)
+                        Button(L.t("Rename", "Renommer", "Ganti nama")) { rename() }
+                        Button(L.t("Cancel", "Annuler", "Batal"), role: .cancel) {}
                     } message: {
-                        Text(L.t("Letters, numbers, spaces, - and _.", "Lettres, chiffres, espaces, - et _."))
+                        Text(L.t("Letters, numbers, spaces, - and _.", "Lettres, chiffres, espaces, - et _.", "Huruf, angka, spasi, - dan _."))
                     }
 
                     Button(role: .destructive) { confirmUninstall = true } label: {
-                        Text(L.t("Uninstall \(app.name)…", "Désinstaller \(app.name)…"))
+                        Text(L.t("Uninstall \(app.name)…", "Désinstaller \(app.name)…", "Hapus instalasi \(app.name)…"))
                     }
                     .disabled(runner.running)
                     .confirmationDialog(
                         L.t("Uninstall \(app.name)? Its wrapper AND everything installed inside (games included) will be deleted.",
-                            "Désinstaller \(app.name) ? Son wrapper ET tout ce qui y est installé (jeux compris) seront supprimés."),
+                            "Désinstaller \(app.name) ? Son wrapper ET tout ce qui y est installé (jeux compris) seront supprimés.",
+                            "Hapus instalasi \(app.name)? Wrapper-nya DAN semua yang terinstal di dalamnya (termasuk game) akan dihapus."),
                         isPresented: $confirmUninstall, titleVisibility: .visible
                     ) {
-                        Button(L.t("Uninstall everything", "Tout désinstaller"), role: .destructive) {
-                            runner.start(L.t("Uninstalling \(app.name)", "Désinstallation de \(app.name)")) { emit, doneCb in
+                        Button(L.t("Uninstall everything", "Tout désinstaller", "Hapus semuanya"), role: .destructive) {
+                            runner.start(L.t("Uninstalling \(app.name)", "Désinstallation de \(app.name)", "Menghapus instalasi \(app.name)")) { emit, doneCb in
                                 WindowsApps.uninstall(app, emit: emit) { code in
                                     doneCb(code)
                                     if code == 0 { DispatchQueue.main.async { onRemoved() } }
@@ -370,7 +382,7 @@ struct AppDetail: View {
                     }
                 }
                 if running {
-                    Text(L.t("Stop it to rename it.", "Arrête-le pour le renommer."))
+                    Text(L.t("Stop it to rename it.", "Arrête-le pour le renommer.", "Hentikan dulu untuk mengganti namanya."))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 if let renameProblem {
@@ -425,7 +437,8 @@ struct AppDetail: View {
 
     private func changeProgram() {
         guard let url = pickExe(message: L.t("Choose the program MacPlay should launch",
-                                             "Choisis le programme que MacPlay doit lancer"),
+                                             "Choisis le programme que MacPlay doit lancer",
+                                             "Pilih program yang harus dijalankan MacPlay"),
                                 startIn: URL(fileURLWithPath: app.driveC),
                                 insidePackages: true)
         else { return }
@@ -465,8 +478,8 @@ struct CategoryPicker: View {
 
     var body: some View {
         Picker("", selection: $selection) {
-            Text(L.t("My Games", "Mes jeux")).tag(WindowsApp.Category.game)
-            Text(L.t("My Apps", "Mes apps")).tag(WindowsApp.Category.app)
+            Text(L.t("My Games", "Mes jeux", "Game Saya")).tag(WindowsApp.Category.game)
+            Text(L.t("My Apps", "Mes apps", "App Saya")).tag(WindowsApp.Category.app)
         }
         .pickerStyle(.segmented)
         .labelsHidden()

@@ -32,17 +32,17 @@ enum Perf {
 
         if ratio >= 1.2 {
             return Estimate(fpsRange: "60+",
-                            hint: L.t("smooth at the recommended preset", "fluide au preset recommandé"))
+                            hint: L.t("smooth at the recommended preset", "fluide au preset recommandé", "mulus di preset yang disarankan"))
         }
         if ratio >= 0.75 {
             return Estimate(fpsRange: "40-60",
-                            hint: L.t("comfortable at the recommended preset", "confortable au preset recommandé"))
+                            hint: L.t("comfortable at the recommended preset", "confortable au preset recommandé", "nyaman di preset yang disarankan"))
         }
         if ratio >= 0.4 {
             return Estimate(fpsRange: "30-40",
-                            hint: L.t("drop the preset one notch", "baisse le preset d'un cran"))
+                            hint: L.t("drop the preset one notch", "baisse le preset d'un cran", "turunkan preset satu tingkat"))
         }
         return Estimate(fpsRange: "20-30",
-                        hint: L.t("Low preset + upscaling only", "preset Low + upscaling obligatoires"))
+                        hint: L.t("Low preset + upscaling only", "preset Low + upscaling obligatoires", "hanya preset Low + upscaling"))
     }
 }

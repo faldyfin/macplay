@@ -27,11 +27,11 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .dashboard: return L.t("My Mac", "Ma machine")
+        case .dashboard: return L.t("My Mac", "Ma machine", "Mac Saya")
         case .steam: return "Steam"
-        case .games: return L.t("Compatible Games", "Jeux compatibles")
-        case .myGames: return L.t("My Games", "Mes jeux")
-        case .myApps: return L.t("My Apps", "Mes apps")
+        case .games: return L.t("Compatible Games", "Jeux compatibles", "Game Kompatibel")
+        case .myGames: return L.t("My Games", "Mes jeux", "Game Saya")
+        case .myApps: return L.t("My Apps", "Mes apps", "App Saya")
         }
     }
     var icon: String {
@@ -58,7 +58,7 @@ struct ContentView: View {
                 Divider()
                 HStack(spacing: 8) {
                     Image(systemName: "globe").foregroundStyle(.secondary)
-                    Picker(L.t("Language", "Langue"), selection: $lang) {
+                    Picker(L.t("Language", "Langue", "Bahasa"), selection: $lang) {
                         ForEach(AppLanguage.allCases) { l in
                             Text(l.label).tag(l.rawValue)
                         }

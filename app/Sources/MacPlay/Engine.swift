@@ -268,8 +268,8 @@ enum Engine {
     static func applyBackend(_ backend: String, wrapper: String = wrapperPath) throws -> String {
         guard var plist = readWrapperPlist(at: wrapper) else {
             throw fail(wrapper == wrapperPath
-                       ? L.t("Wrapper not found — install Steam first.", "Wrapper introuvable — installe Steam d'abord.")
-                       : L.t("Wrapper not found.", "Wrapper introuvable."))
+                       ? L.t("Wrapper not found — install Steam first.", "Wrapper introuvable — installe Steam d'abord.", "Wrapper tidak ditemukan — instal Steam dulu.")
+                       : L.t("Wrapper not found.", "Wrapper introuvable.", "Wrapper tidak ditemukan."))
         }
         let applied = setBackend(backend, in: &plist)
         try writeWrapperPlist(plist, at: wrapper)
@@ -332,7 +332,7 @@ enum Engine {
     /// launcher (which sets up the full backend env), then restore the flags.
     static func bootSteam(extraArgs: String, emit: (String) -> Void) -> Bool {
         guard wrapperInstalled, var plist = readWrapperPlist() else {
-            emit(L.t("Steam is not installed.", "Steam n'est pas installé."))
+            emit(L.t("Steam is not installed.", "Steam n'est pas installé.", "Steam belum terinstal."))
             return false
         }
         let originalFlags = (plist["Program Flags"] as? String) ?? steamFlags
@@ -340,16 +340,17 @@ enum Engine {
         // Never kill Steam mid-download — it would discard the partial data.
         if steamUIAlive && downloadInProgress {
             emit(L.t("A download is in progress in Steam — not restarting it. Try again once the download is finished.",
-                     "Un téléchargement est en cours dans Steam — je ne le redémarre pas. Réessaie une fois le téléchargement terminé."))
+                     "Un téléchargement est en cours dans Steam — je ne le redémarre pas. Réessaie une fois le téléchargement terminé.",
+                     "Steam sedang mengunduh — tidak dimulai ulang. Coba lagi setelah unduhan selesai."))
             return false
         }
 
         if steamUIAlive {
-            emit(L.t("Restarting Steam…", "Redémarrage de Steam…"))
+            emit(L.t("Restarting Steam…", "Redémarrage de Steam…", "Memulai ulang Steam…"))
             sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
             Thread.sleep(forTimeInterval: 3)
         } else {
-            emit(L.t("Starting Steam…", "Démarrage de Steam…"))
+            emit(L.t("Starting Steam…", "Démarrage de Steam…", "Memulai Steam…"))
         }
 
         plist["Program Flags"] = originalFlags + " " + extraArgs
@@ -381,7 +382,7 @@ enum Engine {
         }
         restoreFlags()
         guard argsConsumed else {
-            emit(L.t("Steam did not start in time.", "Steam n'a pas démarré à temps."))
+            emit(L.t("Steam did not start in time.", "Steam n'a pas démarré à temps.", "Steam tidak mulai tepat waktu."))
             return false
         }
 
@@ -391,7 +392,7 @@ enum Engine {
             waited += 3
         }
         guard steamUIAlive else {
-            emit(L.t("Steam did not start.", "Steam n'a pas démarré."))
+            emit(L.t("Steam did not start.", "Steam n'a pas démarré.", "Steam gagal dimulai."))
             return false
         }
         return true
@@ -400,7 +401,8 @@ enum Engine {
     static func launchGameSync(appid: String, emit: (String) -> Void) -> Bool {
         guard bootSteam(extraArgs: "-applaunch " + appid, emit: emit) else { return false }
         emit(L.t("Steam is up — the game is launching (first launch can take a while: updates, shaders)…",
-                 "Steam est lancé — le jeu démarre (le premier lancement peut être long : mises à jour, shaders)…"))
+                 "Steam est lancé — le jeu démarre (le premier lancement peut être long : mises à jour, shaders)…",
+                 "Steam sudah jalan — game sedang dimulai (peluncuran pertama bisa lama: update, shader)…"))
         return true
     }
 
@@ -417,14 +419,16 @@ enum Engine {
             if steamUIAlive {
                 sh("/usr/bin/open", [wrapperPath])  // focus the Steam window
                 emit(L.t("Steam is already open. In its window, go to your Library, find “\(gameTitle)” and click Install — it will queue up next to any current download.",
-                         "Steam est déjà ouvert. Dans sa fenêtre, va dans ta Bibliothèque, cherche « \(gameTitle) » et clique Installer — il se mettra en file d'attente à côté du téléchargement en cours."))
+                         "Steam est déjà ouvert. Dans sa fenêtre, va dans ta Bibliothèque, cherche « \(gameTitle) » et clique Installer — il se mettra en file d'attente à côté du téléchargement en cours.",
+                         "Steam sudah terbuka. Di jendelanya, buka Library, cari “\(gameTitle)” lalu klik Install — game akan masuk antrean di samping unduhan yang sedang berjalan."))
                 done(0)
                 return
             }
             let ok = bootSteam(extraArgs: "steam://install/" + appid, emit: emit)
             if ok {
                 emit(L.t("Steam is showing the install window — confirm it there. Once installed, the game appears under Installed games in the Steam section.",
-                         "Steam affiche la fenêtre d'installation — confirme là-bas. Une fois installé, le jeu apparaît dans Jeux installés, section Steam."))
+                         "Steam affiche la fenêtre d'installation — confirme là-bas. Une fois installé, le jeu apparaît dans Jeux installés, section Steam.",
+                         "Steam menampilkan jendela instalasi — konfirmasi di sana. Setelah terinstal, game muncul di Game terinstal pada bagian Steam."))
             }
             done(ok ? 0 : 1)
         }
@@ -433,15 +437,16 @@ enum Engine {
     static func uninstallSteam(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             guard wrapperInstalled else { done(0); return }
-            emit(L.t("Stopping the Wine session…", "Arrêt de la session Wine…"))
+            emit(L.t("Stopping the Wine session…", "Arrêt de la session Wine…", "Menghentikan sesi Wine…"))
             sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
             Thread.sleep(forTimeInterval: 3)
             emit(L.t("Deleting the wrapper and everything inside…",
-                     "Suppression du wrapper et de tout son contenu…"))
+                     "Suppression du wrapper et de tout son contenu…",
+                     "Menghapus wrapper dan semua isinya…"))
             try? FileManager.default.removeItem(atPath: wrapperPath)
             let gone = !wrapperInstalled
-            emit(gone ? L.t("Steam is uninstalled.", "Steam est désinstallé.")
-                      : L.t("Could not delete the wrapper.", "Impossible de supprimer le wrapper."))
+            emit(gone ? L.t("Steam is uninstalled.", "Steam est désinstallé.", "Steam sudah dihapus.")
+                      : L.t("Could not delete the wrapper.", "Impossible de supprimer le wrapper.", "Wrapper tidak bisa dihapus."))
             done(gone ? 0 : 1)
         }
     }
@@ -461,7 +466,7 @@ enum Engine {
 
     static func stopSteam(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
-            emit(L.t("Stopping Steam and everything it started…", "Arrêt de Steam et de tout ce qu'il a lancé…"))
+            emit(L.t("Stopping Steam and everything it started…", "Arrêt de Steam et de tout ce qu'il a lancé…", "Menghentikan Steam dan semua yang dijalankannya…"))
             sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
             Thread.sleep(forTimeInterval: 3)
             done(steamUIAlive ? 1 : 0)
@@ -470,10 +475,10 @@ enum Engine {
 
     static func restart(emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
-            emit(L.t("Stopping the Wine session…", "Arrêt de la session Wine…"))
+            emit(L.t("Stopping the Wine session…", "Arrêt de la session Wine…", "Menghentikan sesi Wine…"))
             sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
             Thread.sleep(forTimeInterval: 3)
-            emit(L.t("Relaunching Steam…", "Relance de Steam…"))
+            emit(L.t("Relaunching Steam…", "Relance de Steam…", "Menjalankan ulang Steam…"))
             GameDisplay.prepareForLaunch()
             sh("/usr/bin/open", [wrapperPath])
             done(0)
@@ -509,23 +514,24 @@ enum Engine {
             let dest = cachePath + "/" + name
             if fm.fileExists(atPath: dest) {
                 if matchesDigest(dest, file.sha256) {
-                    emit(L.t("Cached: \(name)", "En cache : \(name)"))
+                    emit(L.t("Cached: \(name)", "En cache : \(name)", "Sudah di cache: \(name)"))
                     continue
                 }
                 try fm.removeItem(atPath: dest)  // corrupted or altered: fetch it again
             }
-            emit(L.t("Downloading \(name)…", "Téléchargement de \(name)…"))
+            emit(L.t("Downloading \(name)…", "Téléchargement de \(name)…", "Mengunduh \(name)…"))
             // unique partial name: two setups may fetch the same file at once
             let part = dest + "." + UUID().uuidString + ".part"
             let r = sh("/usr/bin/curl", ["-sL", "--fail", "-o", part, file.url])
             guard r.code == 0 else {
                 try? fm.removeItem(atPath: part)
-                throw fail(L.t("Download failed: \(name)", "Échec du téléchargement : \(name)"))
+                throw fail(L.t("Download failed: \(name)", "Échec du téléchargement : \(name)", "Unduhan gagal: \(name)"))
             }
             guard matchesDigest(part, file.sha256) else {
                 try? fm.removeItem(atPath: part)
                 throw fail(L.t("Checksum mismatch for \(name) — refusing to use it.",
-                               "Somme de contrôle invalide pour \(name) — fichier refusé."))
+                               "Somme de contrôle invalide pour \(name) — fichier refusé.",
+                               "Checksum \(name) tidak cocok — file ditolak."))
             }
             if fm.fileExists(atPath: dest) {
                 try? fm.removeItem(atPath: part)
@@ -577,7 +583,7 @@ enum Engine {
         try fm.createDirectory(atPath: (wrapper as NSString).deletingLastPathComponent,
                                withIntermediateDirectories: true)
 
-        emit(L.t("Assembling the wrapper…", "Assemblage du wrapper…"))
+        emit(L.t("Assembling the wrapper…", "Assemblage du wrapper…", "Menyusun wrapper…"))
         let wrapperName = ((wrapper as NSString).lastPathComponent as NSString).deletingPathExtension
         let work = cachePath + "/work-" + wrapperName
         try? fm.removeItem(atPath: work)
@@ -597,7 +603,7 @@ enum Engine {
 
         // wine prefix — the launcher idles in its GUI event loop after the work
         // is done, so poll for completion and terminate it ourselves
-        emit(L.t("Creating the Wine prefix (1-2 min)…", "Création du prefix Wine (1-2 min)…"))
+        emit(L.t("Creating the Wine prefix (1-2 min)…", "Création du prefix Wine (1-2 min)…", "Membuat prefix Wine (1-2 menit)…"))
         let prefix = wrapper + "/Contents/SharedSupport/prefix"
         try runLauncherStep(wrapper: wrapper, arg: "WSS-wineprefixcreate", doneCheck: {
             fm.fileExists(atPath: prefix + "/system.reg")
@@ -609,7 +615,7 @@ enum Engine {
     private static func runSetup(emit: (String) -> Void) throws {
         let fm = FileManager.default
         guard !wrapperInstalled else {
-            throw fail(L.t("Steam is already installed.", "Steam est déjà installé."))
+            throw fail(L.t("Steam is already installed.", "Steam est déjà installé.", "Steam sudah terinstal."))
         }
 
         // everything is downloaded before the wrapper exists, so a failed
@@ -620,7 +626,7 @@ enum Engine {
         let prefix = prefixPath
 
         // Steam via winetricks (corefonts + known workarounds)
-        emit(L.t("Installing Steam (several minutes)…", "Installation de Steam (plusieurs minutes)…"))
+        emit(L.t("Installing Steam (several minutes)…", "Installation de Steam (plusieurs minutes)…", "Menginstal Steam (beberapa menit)…"))
         let wtCache = NSHomeDirectory() + "/.cache/winetricks/steam"
         try fm.createDirectory(atPath: wtCache, withIntermediateDirectories: true)
         if !fm.fileExists(atPath: wtCache + "/SteamSetup.exe") {
@@ -629,9 +635,9 @@ enum Engine {
         let wt = sh("/bin/sh", [cachePath + "/" + winetricksDownload.name, "-q", "steam"], env: wineEnv(for: wrapperPath))
         guard wt.code == 0,
               fm.fileExists(atPath: prefix + "/drive_c/Program Files (x86)/Steam/Steam.exe")
-        else { throw fail(L.t("Steam installation failed.", "L'installation de Steam a échoué.")) }
+        else { throw fail(L.t("Steam installation failed.", "L'installation de Steam a échoué.", "Instalasi Steam gagal.")) }
 
-        emit(L.t("Configuring…", "Configuration…"))
+        emit(L.t("Configuring…", "Configuration…", "Mengonfigurasi…"))
         guard var plist = readWrapperPlist() else { throw fail("wrapper plist unreadable") }
         plist["CFBundleName"] = "Steam"
         plist["CFBundleIdentifier"] = "com.macplay.steam"
@@ -641,7 +647,8 @@ enum Engine {
         try writeWrapperPlist(plist)
 
         emit(L.t("Launching Steam — log in and install your games!",
-                 "Lancement de Steam — connecte-toi et installe tes jeux !"))
+                 "Lancement de Steam — connecte-toi et installe tes jeux !",
+                 "Menjalankan Steam — login lalu instal game-mu!"))
         GameDisplay.prepareForLaunch()
         sh("/usr/bin/open", [wrapperPath])
     }

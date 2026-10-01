@@ -56,19 +56,21 @@ enum WindowsApps {
     static func nameProblem(_ name: String, renaming current: String? = nil) -> String? {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
-            return L.t("Give it a name.", "Donne-lui un nom.")
+            return L.t("Give it a name.", "Donne-lui un nom.", "Beri nama.")
         }
         if !trimmed.allSatisfy({ $0.isLetter || $0.isNumber || $0 == " " || $0 == "-" || $0 == "_" }) {
             return L.t("Use only letters, numbers, spaces, - and _.",
-                       "Uniquement des lettres, chiffres, espaces, - et _.")
+                       "Uniquement des lettres, chiffres, espaces, - et _.",
+                       "Hanya huruf, angka, spasi, - dan _.")
         }
         if trimmed.lowercased() == "steam" {
             return L.t("“Steam” is reserved for MacPlay's own Steam.",
-                       "« Steam » est réservé au Steam de MacPlay.")
+                       "« Steam » est réservé au Steam de MacPlay.",
+                       "“Steam” dipakai untuk Steam milik MacPlay.")
         }
         if trimmed.lowercased() != current?.lowercased(),
            FileManager.default.fileExists(atPath: root + "/" + trimmed + ".app") {
-            return L.t("An app with this name already exists.", "Une app porte déjà ce nom.")
+            return L.t("An app with this name already exists.", "Une app porte déjà ce nom.", "Sudah ada app dengan nama ini.")
         }
         return nil
     }
@@ -116,34 +118,39 @@ enum WindowsApps {
         // A fresh prefix has no font files in C:\windows\Fonts; Heartopia (Unity) drew
         // all its UI text blank until these were installed.
         emit(L.t("Installing the Windows core fonts (Arial, Verdana…), ~1 min…",
-                 "Installation des polices Windows de base (Arial, Verdana…), ~1 min…"))
+                 "Installation des polices Windows de base (Arial, Verdana…), ~1 min…",
+                 "Menginstal font inti Windows (Arial, Verdana…), ~1 menit…"))
         let fontsEnv = Engine.wineEnv(for: app.wrapperPath).merging(["WINEDLLOVERRIDES": "winemenubuilder.exe=d"]) { _, new in new }
         let fonts = Engine.sh("/bin/sh", [Engine.cachePath + "/" + Engine.winetricksDownload.name, "-q", "corefonts"],
                               env: fontsEnv)
         if fonts.code != 0 {
             emit(L.t("Core fonts could not be installed — some games may show no text.",
-                     "Les polices de base n'ont pas pu être installées — certains jeux risquent de n'afficher aucun texte."))
+                     "Les polices de base n'ont pas pu être installées — certains jeux risquent de n'afficher aucun texte.",
+                     "Font inti gagal diinstal — beberapa game mungkin tidak menampilkan teks."))
         }
 
         let before = exeFiles(in: app.driveC)
         emit(L.t("Running the installer — follow its window. MacPlay waits until it closes.",
-                 "Lancement de l'installeur — suis sa fenêtre. MacPlay attend qu'il se ferme."))
+                 "Lancement de l'installeur — suis sa fenêtre. MacPlay attend qu'il se ferme.",
+                 "Menjalankan installer — ikuti jendelanya. MacPlay menunggu sampai ditutup."))
         let code = try runInstaller(installer, in: app)
         let added = exeFiles(in: app.driveC).subtracting(before)
 
         guard let program = pickMainProgram(Array(added), appName: name) else {
             throw Engine.fail(L.t("No installed program found (installer exit code \(code)). If you cancelled the installer, uninstall this app and try again; otherwise pick the program with “Change…”. Log: \(logPath(for: app))",
-                                  "Aucun programme installé trouvé (code de sortie \(code)). Si tu as annulé l'installeur, désinstalle cette app et réessaie ; sinon choisis le programme avec « Changer… ». Journal : \(logPath(for: app))"))
+                                  "Aucun programme installé trouvé (code de sortie \(code)). Si tu as annulé l'installeur, désinstalle cette app et réessaie ; sinon choisis le programme avec « Changer… ». Journal : \(logPath(for: app))",
+                                  "Tidak ada program terinstal yang ditemukan (kode keluar installer \(code)). Kalau kamu membatalkan installer, hapus app ini lalu coba lagi; kalau tidak, pilih programnya lewat “Ganti…”. Log: \(logPath(for: app))"))
         }
         try updatePlist(of: app) { $0["Program Name and Path"] = program }
-        emit(L.t("Program found: \(program)", "Programme trouvé : \(program)"))
+        emit(L.t("Program found: \(program)", "Programme trouvé : \(program)", "Program ditemukan: \(program)"))
 
         // not isRunning(): wineserver outlives the installer by a few seconds.
         // Windows paths show up in the process args; wildcard the separators.
         let programPattern = program.map { $0.isLetter || $0.isNumber ? String($0) : "." }.joined()
         if Engine.processAlive(programPattern) {
             emit(L.t("The installer left it running. Stop it and launch it from MacPlay so the graphics engine applies to it and its games.",
-                     "L'installeur l'a laissé ouvert. Arrête-le puis lance-le depuis MacPlay pour que le moteur graphique s'applique à lui et à ses jeux."))
+                     "L'installeur l'a laissé ouvert. Arrête-le puis lance-le depuis MacPlay pour que le moteur graphique s'applique à lui et à ses jeux.",
+                     "Installer membiarkannya tetap berjalan. Hentikan lalu jalankan dari MacPlay supaya engine grafis berlaku untuknya dan game-gamenya."))
         }
     }
 
@@ -211,7 +218,7 @@ enum WindowsApps {
 
     private static func updatePlist(of app: WindowsApp, _ change: (inout [String: Any]) -> Void) throws {
         guard var plist = Engine.readWrapperPlist(at: app.wrapperPath) else {
-            throw Engine.fail(L.t("Wrapper not found.", "Wrapper introuvable."))
+            throw Engine.fail(L.t("Wrapper not found.", "Wrapper introuvable.", "Wrapper tidak ditemukan."))
         }
         change(&plist)
         try Engine.writeWrapperPlist(plist, at: app.wrapperPath)
@@ -230,7 +237,8 @@ enum WindowsApps {
         let path = file.resolvingSymlinksInPath().path
         guard path.hasPrefix(drive + "/") else {
             throw Engine.fail(L.t("Pick a program inside this app's C: drive.",
-                                  "Choisis un programme dans le disque C: de cette app."))
+                                  "Choisis un programme dans le disque C: de cette app.",
+                                  "Pilih program di dalam drive C: milik app ini."))
         }
         let relative = String(path.dropFirst(drive.count))
         try updatePlist(of: app) { $0["Program Name and Path"] = relative }
@@ -270,7 +278,7 @@ enum WindowsApps {
     static func rename(_ app: WindowsApp, to newName: String) throws -> WindowsApp {
         let name = newName.trimmingCharacters(in: .whitespaces)
         if isRunning(app) {
-            throw Engine.fail(L.t("Stop \(app.name) before renaming it.", "Arrête \(app.name) avant de le renommer."))
+            throw Engine.fail(L.t("Stop \(app.name) before renaming it.", "Arrête \(app.name) avant de le renommer.", "Hentikan \(app.name) sebelum mengganti namanya."))
         }
         if let problem = nameProblem(name, renaming: app.name) { throw Engine.fail(problem) }
 
@@ -294,15 +302,16 @@ enum WindowsApps {
 
     static func uninstall(_ app: WindowsApp, emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
-            emit(L.t("Stopping \(app.name)…", "Arrêt de \(app.name)…"))
+            emit(L.t("Stopping \(app.name)…", "Arrêt de \(app.name)…", "Menghentikan \(app.name)…"))
             stop(app)
             Thread.sleep(forTimeInterval: 3)
             emit(L.t("Deleting the wrapper and everything installed inside…",
-                     "Suppression du wrapper et de tout ce qui y est installé…"))
+                     "Suppression du wrapper et de tout ce qui y est installé…",
+                     "Menghapus wrapper dan semua yang terinstal di dalamnya…"))
             try? FileManager.default.removeItem(atPath: app.wrapperPath)
             let gone = !FileManager.default.fileExists(atPath: app.wrapperPath)
-            emit(gone ? L.t("\(app.name) is uninstalled.", "\(app.name) est désinstallé.")
-                      : L.t("Could not delete the wrapper.", "Impossible de supprimer le wrapper."))
+            emit(gone ? L.t("\(app.name) is uninstalled.", "\(app.name) est désinstallé.", "\(app.name) sudah dihapus.")
+                      : L.t("Could not delete the wrapper.", "Impossible de supprimer le wrapper.", "Wrapper tidak bisa dihapus."))
             done(gone ? 0 : 1)
         }
     }

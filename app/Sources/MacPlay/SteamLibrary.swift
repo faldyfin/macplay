@@ -109,7 +109,7 @@ enum Hub {
         let (data, response) = try await URLSession.shared.data(for: req)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw NSError(domain: "macplay", code: 2, userInfo: [
-                NSLocalizedDescriptionKey: L.t("The server refused the report.", "Le serveur a refusé l'avis."),
+                NSLocalizedDescriptionKey: L.t("The server refused the report.", "Le serveur a refusé l'avis.", "Server menolak laporan."),
             ])
         }
         struct Reply: Codable { let ok: Bool; let stats: ReportStats? }

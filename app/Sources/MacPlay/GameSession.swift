@@ -57,7 +57,8 @@ final class GameSession: ObservableObject {
                             if self.generation == gen {
                                 self.phase = .idle
                                 self.statusLine = L.t("Game process not seen — maybe still downloading or updating in Steam.",
-                                                      "Process du jeu non détecté — peut-être encore en téléchargement ou mise à jour dans Steam.")
+                                                      "Process du jeu non détecté — peut-être encore en téléchargement ou mise à jour dans Steam.",
+                                                      "Proses game tidak terlihat — mungkin masih mengunduh atau update di Steam.")
                             }
                         }
                         return
