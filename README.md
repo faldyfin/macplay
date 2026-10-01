@@ -53,6 +53,9 @@ If you find MacPlay useful, those projects deserve your stars first.
   something.
 - **Honest about limits** — games with kernel anticheat (Fortnite, Valorant, Destiny 2…)
   are flagged as blocked instead of wasting your evening.
+- **Pick the screen games open on** — with an external display connected, choose it or the
+  built-in one in *My Mac*. Wine opens games on the macOS main display, so MacPlay makes the
+  chosen screen the main display while games run, then puts your arrangement back.
 - **English & French** UI, follows your system language.
 
 ![MacPlay — My Mac tab](docs/app-dashboard.png)
@@ -96,6 +99,10 @@ What MacPlay **does**:
 - **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
   builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
   MacPlay's own files only.
+- **Rearranges your displays, only if you pick a screen for games** — the chosen screen
+  becomes the main display (menu bar and Dock included) when you launch from MacPlay. The
+  change is app-scoped: it is undone when every game and launcher has closed, and macOS undoes
+  it by itself if MacPlay quits.
 - **Downloads the compatibility list** — at most once a day, from this repository on
   `raw.githubusercontent.com`, into `~/Library/Caches/macplay`. It is plain data (ratings,
   notes, links); a broken or emptied list is ignored and the built-in one is used.

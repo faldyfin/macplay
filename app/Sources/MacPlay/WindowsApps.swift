@@ -243,6 +243,7 @@ enum WindowsApps {
 
     /// Opening the wrapper lets its launcher start the program with the chosen engine.
     static func launch(_ app: WindowsApp) {
+        GameDisplay.prepareForLaunch()
         Engine.sh("/usr/bin/open", [app.wrapperPath])
     }
 

@@ -29,6 +29,9 @@ struct DashboardView: View {
     private static var lastReport: DoctorReport?
 
     @State private var report: DoctorReport? = DashboardView.lastReport
+    @State private var screens = GameDisplay.screens()
+    @State private var rearranged = GameDisplay.isRearranged
+    @AppStorage(GameDisplay.preferenceKey) private var gameDisplay = ""
 
     var body: some View {
         ScrollView {
@@ -70,6 +73,10 @@ struct DashboardView: View {
                 } else {
                     ProgressView().controlSize(.small)
                 }
+
+                if screens.count > 1 {
+                    gameScreenBox
+                }
             }
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: 760, alignment: .leading)
@@ -80,6 +87,42 @@ struct DashboardView: View {
             let fresh = await Task.detached(priority: .userInitiated) { Engine.doctor() }.value
             Self.lastReport = fresh
             report = fresh
+        }
+        // screens plugged in or out, or rearranged (by MacPlay too)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)) { _ in
+            screens = GameDisplay.screens()
+            rearranged = GameDisplay.isRearranged
+        }
+    }
+
+    private var gameScreenBox: some View {
+        GroupBox(L.t("Screen for games", "Écran pour les jeux")) {
+            VStack(alignment: .leading, spacing: 8) {
+                Picker(L.t("Open games on", "Ouvrir les jeux sur"), selection: $gameDisplay) {
+                    Text(L.t("The main display", "L'écran principal")).tag("")
+                    ForEach(screens) { screen in
+                        Text(screen.isBuiltin ? L.t("Built-in display", "Écran intégré") : screen.name).tag(screen.key)
+                    }
+                }
+                .frame(maxWidth: 380)
+                Text(L.t("Windows games open on the macOS main display. When you launch Steam or a Windows app from MacPlay, the screen you pick becomes the main display (the menu bar and Dock move there too) until every game and launcher has closed, or you quit MacPlay. A launcher that is already running stays on its screen.",
+                         "Les jeux Windows s'ouvrent sur l'écran principal de macOS. Quand tu lances Steam ou une app Windows depuis MacPlay, l'écran choisi devient l'écran principal (la barre des menus et le Dock y vont aussi) jusqu'à ce que tous les jeux et launchers soient fermés, ou que tu quittes MacPlay. Un launcher déjà ouvert reste sur son écran."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if rearranged {
+                    HStack {
+                        Label(L.t("Screens are rearranged for games right now.", "Les écrans sont réorganisés pour les jeux."),
+                              systemImage: "display.2")
+                            .font(.callout)
+                        Button(L.t("Restore now", "Rétablir")) {
+                            GameDisplay.restore()
+                            rearranged = GameDisplay.isRearranged
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(4)
         }
     }
 }

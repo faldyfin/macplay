@@ -365,6 +365,7 @@ enum Engine {
             }
         }
 
+        GameDisplay.prepareForLaunch()
         sh("/usr/bin/open", [wrapperPath])
 
         // Restore the flags only once steam.exe is visibly running WITH our
@@ -454,6 +455,7 @@ enum Engine {
 
     /// Opening the wrapper lets its launcher start Steam with the chosen graphics engine.
     static func launchSteam() {
+        GameDisplay.prepareForLaunch()
         sh("/usr/bin/open", [wrapperPath])
     }
 
@@ -472,6 +474,7 @@ enum Engine {
             sh(wrapperPath + "/Contents/MacOS/wineskinlauncher", ["WSS-wineserverkill"])
             Thread.sleep(forTimeInterval: 3)
             emit(L.t("Relaunching Steam…", "Relance de Steam…"))
+            GameDisplay.prepareForLaunch()
             sh("/usr/bin/open", [wrapperPath])
             done(0)
         }
@@ -639,6 +642,7 @@ enum Engine {
 
         emit(L.t("Launching Steam — log in and install your games!",
                  "Lancement de Steam — connecte-toi et installe tes jeux !"))
+        GameDisplay.prepareForLaunch()
         sh("/usr/bin/open", [wrapperPath])
     }
 
