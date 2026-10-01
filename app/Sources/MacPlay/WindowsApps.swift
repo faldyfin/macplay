@@ -5,8 +5,12 @@ import Foundation
 /// One wrapper per program keeps its prefix, engine choice and uninstall
 /// independent from Steam — a launcher like TapTap installs its games there too.
 struct WindowsApp: Identifiable, Hashable {
+    /// The section that lists it, My Games or My Apps. A label only: it doesn't change how it runs.
+    enum Category: String { case game, app }
+
     let name: String
     let wrapperPath: String
+    var category: Category = .app
     var id: String { wrapperPath }
 
     var driveC: String { wrapperPath + "/Contents/SharedSupport/prefix/drive_c" }
@@ -14,6 +18,7 @@ struct WindowsApp: Identifiable, Hashable {
 
 enum WindowsApps {
     static let bundleIDPrefix = "com.macplay.exe."
+    static let categoryKey = "MacPlay Category"
     /// The Sikarugir template's placeholder for "no program set".
     static let unsetProgram = "/nothing.exe"
     static var root: String { (Engine.wrapperPath as NSString).deletingLastPathComponent }
@@ -22,10 +27,12 @@ enum WindowsApps {
         let entries = (try? FileManager.default.contentsOfDirectory(atPath: root)) ?? []
         return entries.filter { $0.hasSuffix(".app") }.compactMap { entry in
             let path = root + "/" + entry
-            guard let id = Engine.readWrapperPlist(at: path)?["CFBundleIdentifier"] as? String,
-                  id.hasPrefix(bundleIDPrefix)
+            guard let plist = Engine.readWrapperPlist(at: path),
+                  let id = plist["CFBundleIdentifier"] as? String, id.hasPrefix(bundleIDPrefix)
             else { return nil }
-            return WindowsApp(name: (entry as NSString).deletingPathExtension, wrapperPath: path)
+            // missing or unknown = app: programs installed before categories stay in My Apps
+            let category = (plist[categoryKey] as? String).flatMap(WindowsApp.Category.init(rawValue:)) ?? .app
+            return WindowsApp(name: (entry as NSString).deletingPathExtension, wrapperPath: path, category: category)
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -76,11 +83,12 @@ enum WindowsApps {
 
     // MARK: install
 
-    static func install(installer: URL, name: String,
+    static func install(installer: URL, name: String, category: WindowsApp.Category,
                         emit: @escaping (String) -> Void, done: @escaping (Int32) -> Void) {
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                try runInstall(installer: installer, name: name.trimmingCharacters(in: .whitespaces), emit: emit)
+                try runInstall(installer: installer, name: name.trimmingCharacters(in: .whitespaces),
+                               category: category, emit: emit)
                 done(0)
             } catch {
                 emit("✗ \(error.localizedDescription)")
@@ -89,9 +97,10 @@ enum WindowsApps {
         }
     }
 
-    private static func runInstall(installer: URL, name: String, emit: (String) -> Void) throws {
+    private static func runInstall(installer: URL, name: String, category: WindowsApp.Category,
+                                   emit: (String) -> Void) throws {
         if let problem = nameProblem(name) { throw Engine.fail(problem) }
-        let app = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app")
+        let app = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app", category: category)
 
         try Engine.downloadToCache(Engine.wrapperDownloads + [Engine.winetricksDownload], emit: emit)
         try Engine.assembleWrapper(at: app.wrapperPath, emit: emit)
@@ -101,6 +110,7 @@ enum WindowsApps {
             plist["CFBundleName"] = name
             plist["CFBundleIdentifier"] = bundleIDPrefix + slug(name)
             Engine.setBackend("d3dmetal", in: &plist)
+            plist[categoryKey] = category.rawValue
         }
 
         // A fresh prefix has no font files in C:\windows\Fonts; Heartopia (Unity) drew
@@ -226,6 +236,10 @@ enum WindowsApps {
         try updatePlist(of: app) { $0["Program Name and Path"] = relative }
     }
 
+    static func setCategory(_ category: WindowsApp.Category, for app: WindowsApp) throws {
+        try updatePlist(of: app) { $0[categoryKey] = category.rawValue }
+    }
+
     static func programFlags(of app: WindowsApp) -> String {
         (Engine.readWrapperPlist(at: app.wrapperPath)?["Program Flags"] as? String) ?? ""
     }
@@ -260,7 +274,7 @@ enum WindowsApps {
         }
         if let problem = nameProblem(name, renaming: app.name) { throw Engine.fail(problem) }
 
-        let renamed = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app")
+        let renamed = WindowsApp(name: name, wrapperPath: root + "/" + name + ".app", category: app.category)
         let fm = FileManager.default
         // via a temporary name, so a case-only change also works on a case-insensitive disk
         let temp = root + "/." + UUID().uuidString + ".app"

@@ -44,8 +44,9 @@ If you find MacPlay useful, those projects deserve your stars first.
   new list at most once a day.
 - **Launch from the app** — MacPlay boots Steam with your game and watches the session:
   if the game crashes right away, it suggests trying another engine.
-- **Any Windows program, not just Steam** — in *Windows apps*, pick a setup `.exe` (a game,
-  or another launcher). MacPlay gives it its own wrapper (~1.4 GB) with the Windows core
+- **Any Windows program, not just Steam** — pick a setup `.exe` in *My Games* (games and game
+  launchers) or *My Apps* (other software); you can move it between them later. MacPlay gives
+  it its own wrapper (~1.4 GB) with the Windows core
   fonts (without them, some games draw blank text), runs the installer, finds the installed
   program and launches it with the engine you pick; stop, rename or uninstall it any time.
   Games a launcher installs live in its wrapper and use that engine.
@@ -153,7 +154,7 @@ This alpha exists to collect feedback:
 
 - **Steam is the only launcher MacPlay knows inside out** (game database, install and
   launch by game, crash watch, ratings). Other launchers install fine from their `.exe`
-  under *Windows apps*, but MacPlay doesn't see the games inside them: launch those from
+  under *My Games*, but MacPlay doesn't see the games inside them: launch those from
   the launcher itself. Whether a given launcher runs under Wine at all is up to Wine.
 - Steam's self-updates can be capricious under Wine — if Steam hangs or misbehaves
   after an update, use **"Restart Steam cleanly"** in MacPlay's Steam tab; that

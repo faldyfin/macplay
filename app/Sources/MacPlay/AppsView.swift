@@ -15,11 +15,15 @@ func pickExe(message: String, startIn directory: URL?, insidePackages: Bool = fa
     return panel.runModal() == .OK ? panel.url : nil
 }
 
+/// My Games or My Apps: the programs installed from a setup .exe in one category.
 struct AppsView: View {
+    let category: WindowsApp.Category
+
     @State private var apps: [WindowsApp] = []
     @State private var selected: WindowsApp?
     @State private var installer: URL?
     @State private var newName = ""
+    @State private var installCategory: WindowsApp.Category = .app
     @StateObject private var runner = ActionRunner()
 
     var body: some View {
@@ -31,11 +35,14 @@ struct AppsView: View {
                 .overlay {
                     if apps.isEmpty {
                         VStack(spacing: 8) {
-                            Image(systemName: "macwindow")
+                            Image(systemName: category.icon)
                                 .font(.system(size: 32, weight: .thin))
                                 .foregroundStyle(.tertiary)
-                            Text(L.t("No Windows programs yet.\nInstall one from its setup .exe.",
-                                     "Aucun programme Windows.\nInstalles-en un depuis son .exe d'installation."))
+                            Text(category == .game
+                                 ? L.t("No games yet.\nInstall a game or a launcher from its setup .exe.",
+                                       "Aucun jeu.\nInstalle un jeu ou un launcher depuis son .exe d'installation.")
+                                 : L.t("No apps yet.\nInstall a Windows program from its setup .exe.",
+                                       "Aucune app.\nInstalle un programme Windows depuis son .exe d'installation."))
                                 .multilineTextAlignment(.center)
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
@@ -46,7 +53,9 @@ struct AppsView: View {
                 Button {
                     chooseInstaller()
                 } label: {
-                    Label(L.t("Install a Windows program…", "Installer un programme Windows…"),
+                    Label(category == .game
+                          ? L.t("Install a Windows game…", "Installer un jeu Windows…")
+                          : L.t("Install a Windows program…", "Installer un programme Windows…"),
                           systemImage: "plus")
                 }
                 .disabled(runner.running)
@@ -61,28 +70,35 @@ struct AppsView: View {
             } else if let app = selected {
                 AppDetail(app: app, onRemoved: {
                     selected = nil
-                    apps = WindowsApps.list()
+                    reloadApps()
                 }, onRenamed: { renamed in
-                    apps = WindowsApps.list()
+                    reloadApps()
                     selected = apps.first { $0.id == renamed.id }
+                }, onCategoryChanged: {
+                    // it now belongs to the other section
+                    selected = nil
+                    reloadApps()
                 })
                 .id(app.id)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             } else {
                 VStack(spacing: 8) {
-                    Image(systemName: "macwindow")
+                    Image(systemName: category.icon)
                         .font(.system(size: 40, weight: .thin))
                         .foregroundStyle(.tertiary)
-                    Text(L.t("Install any Windows program — a game or another launcher — from its .exe",
-                             "Installe n'importe quel programme Windows — un jeu ou un autre launcher — depuis son .exe"))
+                    Text(category == .game
+                         ? L.t("Install a Windows game or game launcher (TapTap, Battle.net…) from its .exe",
+                               "Installe un jeu ou un launcher Windows (TapTap, Battle.net…) depuis son .exe")
+                         : L.t("Install any other Windows program from its .exe",
+                               "Installe n'importe quel autre programme Windows depuis son .exe"))
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task { apps = WindowsApps.list() }
+        .task { reloadApps() }
         .onChange(of: runner.running) { isRunning in
-            if !isRunning { apps = WindowsApps.list() }
+            if !isRunning { reloadApps() }
         }
         .onChange(of: selected) { app in
             // picking an app leaves the install panel, except mid-install (its log matters)
@@ -90,16 +106,24 @@ struct AppsView: View {
         }
     }
 
+    private func reloadApps() {
+        apps = WindowsApps.list().filter { $0.category == category }
+    }
+
     private func chooseInstaller() {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
-        guard let url = pickExe(message: L.t("Choose the program's setup .exe",
-                                             "Choisis le .exe d'installation du programme"),
+        guard let url = pickExe(message: category == .game
+                                    ? L.t("Choose the game's or launcher's setup .exe",
+                                          "Choisis le .exe d'installation du jeu ou du launcher")
+                                    : L.t("Choose the program's setup .exe",
+                                          "Choisis le .exe d'installation du programme"),
                                 startIn: downloads)
         else { return }
         selected = nil
         runner.log = []
         runner.lastExit = nil
         newName = WindowsApps.suggestedName(forInstaller: url)
+        installCategory = category
         installer = url
     }
 
@@ -111,7 +135,9 @@ struct AppsView: View {
         let problem = started ? nil : WindowsApps.nameProblem(newName)
         return ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(L.t("Install a Windows program", "Installer un programme Windows"))
+                Text(installCategory == .game
+                     ? L.t("Install a Windows game", "Installer un jeu Windows")
+                     : L.t("Install a Windows program", "Installer un programme Windows"))
                     .font(.title.bold())
 
                 GroupBox {
@@ -127,6 +153,12 @@ struct AppsView: View {
                         if let problem {
                             Text(problem).font(.caption).foregroundStyle(.orange)
                         }
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(L.t("Category", "Catégorie")).foregroundStyle(.secondary).frame(width: 160, alignment: .leading)
+                            CategoryPicker(selection: $installCategory)
+                                .disabled(started)
+                        }
+                        .font(.callout)
                         Text(L.t("MacPlay builds a separate Wine wrapper for it in ~/Applications/Sikarugir (~1.4 GB on disk; ~250 MB download the first time), runs the installer, then finds the installed program. Games you install from inside it — from a launcher, say — live in that wrapper too.",
                                  "MacPlay crée un wrapper Wine séparé dans ~/Applications/Sikarugir (~1,4 Go sur le disque ; ~250 Mo téléchargés la première fois), lance l'installeur, puis trouve le programme installé. Les jeux que tu installes depuis celui-ci — depuis un launcher par exemple — vivent aussi dans ce wrapper."))
                             .font(.caption)
@@ -147,8 +179,9 @@ struct AppsView: View {
                     } else {
                         Button(L.t("Install", "Installer")) {
                             let name = newName
+                            let chosen = installCategory
                             runner.start(L.t("Installing \(name)", "Installation de \(name)")) { emit, doneCb in
-                                WindowsApps.install(installer: url, name: name, emit: emit, done: doneCb)
+                                WindowsApps.install(installer: url, name: name, category: chosen, emit: emit, done: doneCb)
                             }
                         }
                         .buttonStyle(.borderedProminent)
@@ -173,7 +206,7 @@ struct AppsView: View {
     /// wrapper is listed so it can be fixed or uninstalled).
     private func showInstalled() {
         let name = newName.trimmingCharacters(in: .whitespaces)
-        apps = WindowsApps.list()
+        reloadApps()
         installer = nil
         selected = apps.first { $0.name == name }
     }
@@ -183,6 +216,7 @@ struct AppDetail: View {
     let app: WindowsApp
     let onRemoved: () -> Void
     let onRenamed: (WindowsApp) -> Void
+    let onCategoryChanged: () -> Void
 
     @StateObject private var runner = ActionRunner()
     @State private var program: String?
@@ -294,6 +328,14 @@ struct AppDetail: View {
                     .padding(4)
                 }
 
+                HStack(alignment: .firstTextBaseline) {
+                    Text(L.t("Listed in", "Classé dans")).foregroundStyle(.secondary)
+                    // writes only when the player picks the other section
+                    CategoryPicker(selection: Binding(get: { app.category }, set: { moveTo($0) }))
+                        .frame(maxWidth: 260)
+                }
+                .font(.callout)
+
                 HStack {
                     Button(L.t("Rename…", "Renommer…")) {
                         newName = app.name
@@ -354,6 +396,16 @@ struct AppDetail: View {
         }
     }
 
+    private func moveTo(_ category: WindowsApp.Category) {
+        guard category != app.category else { return }
+        do {
+            try WindowsApps.setCategory(category, for: app)
+            onCategoryChanged()
+        } catch {
+            problem = error.localizedDescription
+        }
+    }
+
     private func rename() {
         guard newName.trimmingCharacters(in: .whitespaces) != app.name else { return }
         do {
@@ -405,4 +457,22 @@ struct AppDetail: View {
         }
         reload()
     }
+}
+
+/// Game / App, labelled with the sections they lead to.
+struct CategoryPicker: View {
+    @Binding var selection: WindowsApp.Category
+
+    var body: some View {
+        Picker("", selection: $selection) {
+            Text(L.t("My Games", "Mes jeux")).tag(WindowsApp.Category.game)
+            Text(L.t("My Apps", "Mes apps")).tag(WindowsApp.Category.app)
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+}
+
+extension WindowsApp.Category {
+    var icon: String { self == .game ? "play.circle" : "macwindow" }
 }

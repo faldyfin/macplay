@@ -22,14 +22,16 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     case dashboard
     case steam
     case games
-    case apps
+    case myGames
+    case myApps
     var id: String { rawValue }
     var label: String {
         switch self {
         case .dashboard: return L.t("My Mac", "Ma machine")
         case .steam: return "Steam"
         case .games: return L.t("Compatible Games", "Jeux compatibles")
-        case .apps: return L.t("Windows apps", "Apps Windows")
+        case .myGames: return L.t("My Games", "Mes jeux")
+        case .myApps: return L.t("My Apps", "Mes apps")
         }
     }
     var icon: String {
@@ -37,7 +39,8 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         case .dashboard: return "cpu"
         case .steam: return "cloud"
         case .games: return "gamecontroller"
-        case .apps: return "macwindow"
+        case .myGames: return WindowsApp.Category.game.icon
+        case .myApps: return WindowsApp.Category.app.icon
         }
     }
 }
@@ -70,7 +73,9 @@ struct ContentView: View {
             case .dashboard: DashboardView()
             case .steam: SteamView()
             case .games: GamesView()
-            case .apps: AppsView()
+            // .id: a separate view state per section, so a selection never carries over
+            case .myGames: AppsView(category: .game).id("myGames")
+            case .myApps: AppsView(category: .app).id("myApps")
             }
         }
         // re-create the whole tree when the language changes so every L.t()
