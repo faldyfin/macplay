@@ -18,7 +18,8 @@ Rationale: nothing to install or update besides MacPlay itself, and a small surf
 
 - MacPlay MUST write only to `~/Applications/Sikarugir/` (wrappers), `~/Library/Caches/macplay`
   (downloads, install logs, the downloaded compatibility list, game artwork),
-  `~/.cache/winetricks`, and its own preferences (`UserDefaults`: language, screen for games,
+  `~/Library/Application Support/MacPlay` (artwork the player chooses), `~/.cache/winetricks`, and
+  its own preferences (`UserDefaults`: language, screen for games,
   anonymous install id, play time per game).
 - It MUST NOT ask for a password, run as root, install background services or launch agents,
   or read the user's files, keychain or other apps.
@@ -90,7 +91,8 @@ Rationale: the README is the contract with users; specs are the contract with co
 - MacPlay is not notarized; the README documents the one-time Gatekeeper step.
 - Network access: Sikarugir releases and winetricks (GitHub), Steam's CDN, Steam's image server
   (`cdn.akamai.steamstatic.com`, game artwork, cached), the ratings backend (only when the user
-  sends a rating) and the compatibility list (`raw.githubusercontent.com`, at most once a day).
+  sends a rating), the compatibility list (`raw.githubusercontent.com`, at most once a day) and an
+  image link the user drops or pastes into the cover picker (that one file, over HTTPS).
   Any new destination MUST be added to the README.
 - Licenses: MacPlay's code and `data/games.json` are MIT. `data/compatibility.json` contains
   AppleGamingWiki content and is CC BY-NC-SA 3.0, with AreWeAntiCheatYet data (MIT). Imported
@@ -120,4 +122,4 @@ Rationale: the README is the contract with users; specs are the contract with co
   or materially expanded guidance, PATCH for wording and clarifications.
 - Runtime guidance for agents lives in `.claude/skills/` (Spec Kit) and `README.md`.
 
-**Version**: 1.1.1 | **Ratified**: 2026-10-01 | **Last Amended**: 2026-10-01
+**Version**: 1.2.0 | **Ratified**: 2026-10-01 | **Last Amended**: 2026-10-01
