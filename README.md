@@ -29,6 +29,10 @@ If you find MacPlay useful, those projects deserve your stars first.
 
 ## What it does
 
+- **A launcher-style Home** — your most-played game up front with Play, your games and
+  well-rated ones as cover cards with their official Steam artwork, search, and cards for
+  what's running, your Mac, play time and recently added. Play time is counted while MacPlay
+  is open and stays on this Mac.
 - **One-click Steam setup** — downloads and assembles the whole Wine + Steam stack
   (engine, prefix, fonts, known workarounds). Launch, stop, reinstall or uninstall it just as easily;
   your installed Steam games are listed right in the Steam section.
@@ -85,7 +89,7 @@ What MacPlay **does**:
 
 - **Writes only to folders you already own** — `~/Applications/Sikarugir/` (the Steam
   wrapper, plus one wrapper per Windows program you install) and `~/Library/Caches/macplay`
-  + `~/.cache/winetricks` (downloads, installer logs). It never writes to `/System`,
+  + `~/.cache/winetricks` (downloads, installer logs, game artwork). It never writes to `/System`,
   `/Library`, or anywhere privileged.
 - **Runs the Windows installers you pick** inside that program's own wrapper. What the
   installer then does is up to the installer, as on Windows.
@@ -97,7 +101,7 @@ What MacPlay **does**:
   checked against their SHA-256 before use (winetricks checks the fonts the same way).
   Steam's installer is the exception: Valve only serves the latest one.
 - **Runs standard system binaries**: `curl`, `tar`, `xattr`, `open`, `sysctl`,
-  `system_profiler`, `pgrep`, and `sh` to run winetricks, plus the bundled `wine`.
+  `system_profiler`, `pgrep`, `ps` (play time), and `sh` to run winetricks, plus the bundled `wine`.
 - **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
   builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
   MacPlay's own files only.
@@ -108,6 +112,13 @@ What MacPlay **does**:
 - **Downloads the compatibility list** — at most once a day, from this repository on
   `raw.githubusercontent.com`, into `~/Library/Caches/macplay`. It is plain data (ratings,
   notes, links); a broken or emptied list is ignored and the built-in one is used.
+- **Downloads game artwork** — cover and banner images by Steam app id from Steam's image
+  server, `cdn.akamai.steamstatic.com`, cached in `~/Library/Caches/macplay/art`. The request
+  tells Steam's server which games' images are shown; nothing else is sent. An image Steam
+  doesn't have is asked for again after 7 days.
+- **Counts play time locally** — every 30 seconds while MacPlay is open it lists running
+  processes to see which game or program is up, and keeps the totals in its own preferences.
+  Never sent anywhere.
 - **Sends anonymous ratings** — when you rate a game, the score plus your hardware profile
   (chip, RAM, macOS, engine used) is POSTed to the ratings backend. No account, no personal
   data, and only when you click "Send".
@@ -169,6 +180,8 @@ This alpha exists to collect feedback:
   and DXVK; WineD3D is gone. Wrappers built by earlier MacPlay versions keep their Wine 10
   engine and all four choices.
 - Kernel-anticheat multiplayer games will never work through translation.
+- Play time only counts while MacPlay is open, and a game started inside a launcher
+  (Heartopia in TapTap) counts for the launcher.
 - Imported ratings are only as good as the reports behind them. Many AppleGamingWiki
   reports are from 2021-2022, before D3DMetal existed, so check the date shown next to each.
   Imported games have no engine recommendation, and anti-cheat blocks are based on

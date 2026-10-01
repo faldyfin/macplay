@@ -43,6 +43,8 @@ struct GamesView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Theme.panel)
                 Divider()
                 listFooter
             }
@@ -148,8 +150,15 @@ struct GameDetail: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if let appid = game.steam_appid {
+                    ArtImage(appid: appid, kind: .banner, title: "")
+                        .frame(height: 220)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                }
+
                 HStack(alignment: .firstTextBaseline) {
-                    Text(game.title).font(.title.bold())
+                    Text(game.title).font(Theme.title(28))
                     Spacer()
                     Text(statusLabel(game.status))
                         .font(.caption.bold())

@@ -32,6 +32,8 @@ struct AppsView: View {
                 List(apps, selection: $selected) { app in
                     Text(app.name).lineLimit(1).tag(app)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Theme.panel)
                 .overlay {
                     if apps.isEmpty {
                         VStack(spacing: 8) {

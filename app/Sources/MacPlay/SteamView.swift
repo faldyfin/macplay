@@ -218,6 +218,9 @@ struct SteamView: View {
                 ForEach(games) { game in
                     NavigationLink(value: game) {
                         HStack {
+                            ArtImage(appid: Int(game.appid), kind: .cover, title: "")
+                                .frame(width: 40, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(game.name).lineLimit(1)
                                 HStack(spacing: 6) {

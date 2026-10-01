@@ -18,9 +18,14 @@ struct InstalledDetail: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                ArtImage(appid: Int(game.appid), kind: .banner, title: "")
+                    .frame(height: 220)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
                 // Title + play
                 HStack(alignment: .firstTextBaseline) {
-                    Text(game.name).font(.title.bold())
+                    Text(game.name).font(Theme.title(28))
                     Spacer()
                     Button {
                         session.play(game)
