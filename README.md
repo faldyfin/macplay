@@ -94,8 +94,8 @@ What MacPlay **does**:
   on a Mac at all. The wrapper, engine and winetricks are pinned to exact versions and
   checked against their SHA-256 before use (winetricks checks the fonts the same way).
   Steam's installer is the exception: Valve only serves the latest one.
-- **Runs standard system binaries** via shell: `curl`, `tar`, `xattr`, `open`,
-  `sysctl`, `system_profiler`, plus the bundled `wine`.
+- **Runs standard system binaries**: `curl`, `tar`, `xattr`, `open`, `sysctl`,
+  `system_profiler`, `pgrep`, and `sh` to run winetricks, plus the bundled `wine`.
 - **Removes the quarantine flag** (`xattr -dr com.apple.quarantine`) from the wrappers it
   builds, so Wine can launch — this is a deliberate, scoped Gatekeeper bypass on
   MacPlay's own files only.
