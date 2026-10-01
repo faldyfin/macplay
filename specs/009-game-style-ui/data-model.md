@@ -17,7 +17,7 @@
 | seconds | integer | grows by the tick length while the title runs |
 | lastPlayed | date | set on every tick it runs |
 
-- Renaming a program starts a new key (old time stays under the old name).
+- Renaming a program moves its time to the new key (since 010; before, a new key started).
 - Never sent anywhere.
 
 ## Home item
