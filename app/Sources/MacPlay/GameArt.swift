@@ -70,16 +70,17 @@ struct ArtImage: View {
     @State private var image: NSImage?
 
     var body: some View {
-        ZStack {
-            ArtPlaceholder(title: title)
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .transition(.opacity)
+        // the image is an overlay so its fill size never widens the layout
+        ArtPlaceholder(title: title)
+            .overlay {
+                if let image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .transition(.opacity)
+                }
             }
-        }
-        .clipped()
+            .clipped()
         .task(id: appid) {
             guard let appid else { return }
             let loaded = await GameArt.image(appid: appid, kind: kind)

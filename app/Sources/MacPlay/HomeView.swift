@@ -261,11 +261,14 @@ struct HomeView: View {
             // scrim: keeps the title legible on any artwork
             LinearGradient(colors: [.clear, Theme.background.opacity(0.95)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 10) {
+                // backed so they stay readable on bright artwork
                 Chip(text: subtitle(for: featured))
+                    .background(Theme.background.opacity(0.75), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 Text(featured.title)
                     .font(Theme.title(40))
                     .foregroundStyle(.white)
                     .lineLimit(2)
+                    .shadow(color: .black.opacity(0.5), radius: 8)
                 if let key = featured.playKey, let seconds = playTime.entries[key]?.seconds {
                     Text(L.t("Played \(playTimeText(seconds))", "Joué \(playTimeText(seconds))",
                              "Dimainkan \(playTimeText(seconds))"))
