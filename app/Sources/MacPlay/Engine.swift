@@ -423,8 +423,8 @@ enum Engine {
             }
             let ok = bootSteam(extraArgs: "steam://install/" + appid, emit: emit)
             if ok {
-                emit(L.t("Steam is showing the install window — confirm it there. Once installed, the game appears in “My games”.",
-                         "Steam affiche la fenêtre d'installation — confirme là-bas. Une fois installé, le jeu apparaît dans « Mes jeux »."))
+                emit(L.t("Steam is showing the install window — confirm it there. Once installed, the game appears under Installed games in the Steam section.",
+                         "Steam affiche la fenêtre d'installation — confirme là-bas. Une fois installé, le jeu apparaît dans Jeux installés, section Steam."))
             }
             done(ok ? 0 : 1)
         }
