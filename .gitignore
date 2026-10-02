@@ -4,3 +4,4 @@ app/dist/
 *.dmg
 .claude/settings.local.json
 app/icon/AppIcon-preview.png
+__pycache__/

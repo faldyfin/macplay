@@ -6,6 +6,11 @@ cd "$(dirname "$0")"
 
 swift build -c release
 
+# The Release workflow passes the version it computed; local builds use the last release tag.
+VERSION="${MACPLAY_VERSION:-$( (git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true) | sed -E 's/^v//; s/-.*//')}"
+VERSION="${VERSION:-0.0.0}"
+BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
+
 APP="dist/MacPlay.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/engine/data"
@@ -15,7 +20,7 @@ cp .build/release/MacPlay "$APP/Contents/MacOS/MacPlay"
 cp ../data/games.json ../data/compatibility.json "$APP/Contents/Resources/engine/data/"
 cp icon/AppIcon.icns "$APP/Contents/Resources/"
 
-cat > "$APP/Contents/Info.plist" <<'PLIST'
+cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -25,8 +30,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleName</key><string>MacPlay</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
   <key>LSMinimumSystemVersion</key><string>14.6</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppTransportSecurity</key>
@@ -41,4 +46,4 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 PLIST
 
 codesign --force --deep -s - "$APP"
-echo "OK: $APP"
+echo "OK: $APP ($VERSION, build $BUILD_NUMBER)"
