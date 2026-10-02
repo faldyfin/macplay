@@ -34,7 +34,8 @@ If you find MacPlay useful, those projects deserve your stars first.
   what's running, your Mac, play time and recently added. Play time is counted while MacPlay
   is open and stays on this Mac. No artwork for a game (Heartopia from TapTap)? *Choose a cover*
   opens Google Images in your browser; drag the image you like back into MacPlay, paste it or
-  pick a file. Right-click any card or the banner to change or reset its artwork.
+  pick a file. Change or reset it later from the game's Details page, or by right-clicking
+  its card or the banner.
 - **One-click Steam setup** — downloads and assembles the whole Wine + Steam stack
   (engine, prefix, fonts, known workarounds). Launch, stop, reinstall or uninstall it just as easily;
   your installed Steam games are listed right in the Steam section.

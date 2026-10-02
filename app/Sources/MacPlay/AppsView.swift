@@ -280,6 +280,8 @@ struct AppDetail: View {
                         .foregroundStyle(.green)
                 }
 
+                ArtworkBox(key: PlayTime.appKey(app.name), title: app.name, appid: nil)
+
                 GroupBox(L.t("Program", "Programme", "Program")) {
                     VStack(alignment: .leading, spacing: 10) {
                         HStack(alignment: .firstTextBaseline) {

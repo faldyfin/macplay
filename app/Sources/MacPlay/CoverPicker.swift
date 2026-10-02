@@ -152,3 +152,43 @@ struct CoverPicker: View {
         }
     }
 }
+
+/// A game's cover and banner on its Details page, with change and reset.
+struct ArtworkBox: View {
+    let key: String
+    let title: String
+    let appid: Int?
+
+    @ObservedObject private var chosen = ChosenArt.shared
+    @State private var target: CoverTarget?
+
+    var body: some View {
+        GroupBox(L.t("Artwork", "Illustrations", "Gambar")) {
+            HStack(alignment: .top, spacing: 24) {
+                slot(.cover, size: CGSize(width: 80, height: 120), radius: 10)
+                slot(.banner, size: CGSize(width: 260, height: 86), radius: 12)
+            }
+        }
+        .sheet(item: $target) { CoverPicker(target: $0) }
+    }
+
+    private func slot(_ kind: GameArt.Kind, size: CGSize, radius: CGFloat) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            ArtImage(appid: appid, kind: kind, title: "", key: key)
+                .frame(width: size.width, height: size.height)
+                .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+            VStack(alignment: .leading, spacing: 6) {
+                Button(kind == .cover ? L.t("Change cover…", "Changer la jaquette…", "Ganti sampul…")
+                                      : L.t("Change banner…", "Changer la bannière…", "Ganti banner…")) {
+                    target = CoverTarget(key: key, title: title, kind: kind)
+                }
+                if chosen.has(key, kind) {
+                    Button(L.t("Use default artwork", "Illustration par défaut", "Pakai gambar bawaan")) {
+                        chosen.remove(key, kind)
+                    }
+                }
+            }
+            .controlSize(.small)
+        }
+    }
+}

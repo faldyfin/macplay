@@ -65,6 +65,8 @@ struct InstalledDetail: View {
                     .foregroundStyle(.secondary)
                 }
 
+                ArtworkBox(key: PlayTime.steamKey(game.appid), title: game.name, appid: Int(game.appid))
+
                 // Engine choice — the escape hatch for unlisted games,
                 // and the fix path after a crash
                 GroupBox(L.t("Graphics engine", "Moteur graphique", "Engine grafis")) {
