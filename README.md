@@ -29,7 +29,7 @@ If you find MacPlay useful, those projects deserve your stars first.
 
 ## What it does
 
-- **A launcher-style Home** — your most-played game up front with Play, your games and
+- **A launcher-style Home** — the game you played last up front with Play, your games and
   well-rated ones as cover cards with their official Steam artwork, search, and cards for
   what's running, your Mac, play time and recently added. Play time is counted while MacPlay
   is open and stays on this Mac. No artwork for a game (Heartopia from TapTap)? *Choose a cover*

@@ -126,15 +126,21 @@ struct HomeView: View {
     /// Most-played installed title, else the most recently added, else a hand-tuned favourite.
     private var featured: HomeItem? {
         let installedItems = yourGames
-        if let best = installedItems
-            .compactMap({ item in item.playKey.flatMap { playTime.entries[$0] }.map { (item, $0.seconds) } })
-            .max(by: { $0.1 < $1.1 }) {
-            return best.0
+        if let last = Self.lastPlayed(installedItems, entries: playTime.entries) {
+            return last
         }
         if let latest = installedItems.max(by: { (addedDate($0) ?? .distantPast) < (addedDate($1) ?? .distantPast) }) {
             return latest
         }
         return runsGreat.first
+    }
+
+    /// The installed item played most recently; nil when none has been played yet.
+    static func lastPlayed(_ items: [HomeItem], entries: [String: PlayTime.Entry]) -> HomeItem? {
+        items
+            .compactMap { item in item.playKey.flatMap { entries[$0] }.map { (item, $0.lastPlayed) } }
+            .max { $0.1 < $1.1 }?
+            .0
     }
 
     private func addedDate(_ item: HomeItem) -> Date? {
