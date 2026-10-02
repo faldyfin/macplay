@@ -5,6 +5,7 @@ let package = Package(
     name: "MacPlay",
     platforms: [.macOS(.v13)],
     targets: [
-        .executableTarget(name: "MacPlay", path: "Sources/MacPlay")
+        .executableTarget(name: "MacPlay", path: "Sources/MacPlay"),
+        .testTarget(name: "MacPlayTests", dependencies: ["MacPlay"], path: "Tests/MacPlayTests"),
     ]
 )
