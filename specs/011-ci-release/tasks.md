@@ -34,7 +34,7 @@ version script.
 - [X] T010 [P] README: install from releases with the checksum, tests, CI, releases
 - [X] T011 [P] Constitution 1.3.0: release and CI rules, Dependabot cooldown, pinned Trivy
 - [X] T012 Local validation: quickstart steps 1–2
-- [ ] T013 CI validation after push: quickstart steps 3–4
+- [X] T013 CI validation after push: quickstart steps 3–4 (2026-10-02: CI green on Swift 6.3.3 / Xcode 26.6, Trivy analysis with 0 results in code scanning; test Release run built MacPlay-1.0.0.dmg, build 43, checksum and signature verified, nothing published)
 - [ ] T014 First release by the maintainer: quickstart steps 5–6; then set `**Status**` to Implemented in `specs/011-ci-release/spec.md`
 
 ## Dependencies
