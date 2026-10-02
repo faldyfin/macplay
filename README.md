@@ -74,7 +74,9 @@ If you find MacPlay useful, those projects deserve your stars first.
 **Requirements:** Apple Silicon (M1 or later), macOS 14.6+ (what the Sikarugir wrapper
 template requires).
 
-1. Download **[MacPlay.dmg](../../releases/latest)**.
+1. Download **MacPlay-x.y.z.dmg** from the [latest release](../../releases/latest).
+   To check the download, put the `.sha256` file next to it and run
+   `shasum -a 256 -c MacPlay-x.y.z.dmg.sha256`.
 2. Open the dmg, drag MacPlay to Applications.
 3. First launch: macOS will refuse to open it (this build isn't notarized — that
    requires a paid Apple Developer account). Click **Done** (not "Move to Trash"),
@@ -152,6 +154,21 @@ The repo also contains the original Python prototype of the engine
 with AppleGamingWiki and AreWeAntiCheatYet, and the *Update compatibility list* workflow
 runs it every Monday and commits the result. Don't edit it by hand. To refresh it locally:
 `python3 tools/update_compat.py` (standard library only).
+
+Tests: `swift test` (from `app/`) and `python3 -m unittest discover -s tools/tests`. The *CI*
+workflow runs them, a release build and a [Trivy](https://trivy.dev) scan (vulnerabilities,
+secrets, misconfigurations; high or critical findings fail it) on every push and pull request.
+Dependabot keeps the pinned GitHub Actions current, waiting 7 days after each release.
+
+### Releases
+
+Releases are manual: **Actions → Release → Run workflow**, type `release`, run. Anything else
+only builds the DMG and keeps it as a test artifact for 7 days. The version follows
+[Semantic Versioning](https://semver.org) from the [Conventional Commits](https://www.conventionalcommits.org)
+since the last tag (`tools/next_version.py`): a breaking change (`feat!:` or a
+`BREAKING CHANGE:` footer) bumps the major version, `feat` the minor, `fix`/`perf`/`revert` the
+patch; other types release nothing. The release notes list those commits, and the DMG comes
+with its SHA-256. Locally, `./build.sh && ./make_dmg.sh <version>` (from `app/`) makes the same DMG.
 
 Specs for new work use [GitHub Spec Kit](https://github.com/github/spec-kit): project
 scaffolding lives in `.specify/`, and the `/speckit-*` Claude Code skills in `.claude/skills/`.

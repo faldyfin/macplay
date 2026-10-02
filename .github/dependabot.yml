@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # The only third-party code in CI: actions pinned to commit SHAs. The Swift package and
+  # the Python tools have no dependencies; Trivy's version in ci.yml is bumped by hand.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope

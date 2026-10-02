@@ -1,0 +1,88 @@
+name: Release
+
+# Manual only: Actions → Release → Run workflow. The version comes from the Conventional
+# Commits since the last tag (tools/next_version.py). Typing "release" builds, tags and
+# publishes the DMG; anything else only builds it and keeps it as a test artifact.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "release" to publish. Anything else only builds the DMG as a test.'
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-26
+    permissions:
+      contents: write  # create the tag and the release
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      # through the environment, never pasted into a script
+      CONFIRM: ${{ inputs.confirm }}
+    steps:
+      - name: Releases come from main
+        if: env.CONFIRM == 'release' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Run the release from main, not ${GITHUB_REF_NAME}."
+          exit 1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0  # history and tags, for the version and the build number
+
+      - name: Work out the version
+        run: |
+          version=$(python3 tools/next_version.py --notes "$RUNNER_TEMP/notes.md")
+          echo "MACPLAY_VERSION=$version" >> "$GITHUB_ENV"
+          echo "Version: $version"
+
+      - name: Unit tests
+        working-directory: app
+        run: swift test
+
+      - name: Build the app
+        run: app/build.sh
+
+      - name: Package the DMG
+        run: app/make_dmg.sh "$MACPLAY_VERSION"
+
+      - name: Keep the DMG as a test build
+        if: env.CONFIRM != 'release'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: MacPlay-${{ env.MACPLAY_VERSION }}-test
+          path: |
+            app/dist/MacPlay-*.dmg
+            app/dist/MacPlay-*.dmg.sha256
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Publish the release
+        if: env.CONFIRM == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$MACPLAY_VERSION" \
+            "app/dist/MacPlay-$MACPLAY_VERSION.dmg" "app/dist/MacPlay-$MACPLAY_VERSION.dmg.sha256" \
+            --title "MacPlay $MACPLAY_VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --target "$GITHUB_SHA"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            if [ "$CONFIRM" = release ]; then echo "## Released MacPlay ${MACPLAY_VERSION:-?}"
+            else echo "## Test build of MacPlay ${MACPLAY_VERSION:-?} (not published; type release to publish)"; fi
+            echo
+            cat "$RUNNER_TEMP/notes.md" 2>/dev/null || true
+          } >> "$GITHUB_STEP_SUMMARY"

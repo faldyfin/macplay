@@ -1,0 +1,75 @@
+name: CI
+
+# Every push to main and every pull request: release build and unit tests on macOS,
+# the tools' tests, and a Trivy scan whose results go to the Security tab.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Build and test the app
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Toolchain
+        run: swift --version
+
+      - name: Release build
+        working-directory: app
+        run: swift build -c release
+
+      - name: Unit tests
+        working-directory: app
+        run: swift test
+
+  tools:
+    name: Test the tools
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tools/tests -v
+
+  trivy:
+    name: Trivy scan
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write  # upload the results to the Security tab
+    env:
+      # Bumped by hand (Dependabot doesn't see it): a release at least 7 days old, with the
+      # SHA-256 of its Linux-64bit tarball from trivy_<version>_checksums.txt.
+      TRIVY_VERSION: 0.74.0
+      TRIVY_SHA256: 2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install Trivy (pinned, checksum-verified)
+        run: |
+          curl -sSfL -o trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tar.gz" | sha256sum -c -
+          tar -xzf trivy.tar.gz trivy
+          rm trivy.tar.gz
+
+      - name: Scan for the Security tab
+        run: ./trivy fs --scanners vuln,secret,misconfig --skip-version-check --format sarif --output trivy.sarif .
+
+      - name: Upload the results
+        if: always() && hashFiles('trivy.sarif') != ''
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+
+      - name: Fail on high or critical findings
+        run: ./trivy fs --scanners vuln,secret,misconfig --skip-version-check --severity HIGH,CRITICAL --exit-code 1 .
