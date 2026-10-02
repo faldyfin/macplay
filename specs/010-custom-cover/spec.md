@@ -58,6 +58,10 @@ banner…", and later "Use default artwork" to go back.
    artwork" when a chosen banner exists.
 3. **Given** a chosen cover, **When** the player picks "Use default artwork", **Then** the card goes
    back to the Steam artwork, or the placeholder if there is none.
+4. **Given** the Details page of an installed Steam game or a program, **When** it opens, **Then** an
+   Artwork box shows its cover and banner with "Change cover…" / "Change banner…", and "Use
+   default artwork" for a chosen one (added 2026-10-02: once a cover was set, the player found no
+   visible way to change it again).
 
 ---
 
@@ -113,6 +117,8 @@ that its artwork files are gone.
 - **FR-009**: All new text MUST exist in English, French and Indonesian.
 - **FR-010**: The README MUST say where chosen artwork is kept and that a dropped image link is
   downloaded from the site it points to.
+- **FR-011**: The Details page of every installed Steam game and program MUST offer changing and
+  resetting its cover and banner.
 
 ### Key Entities
 
@@ -136,6 +142,6 @@ that its artwork files are gone.
   image search API is closed to new customers and ends on 2027-01-01, and that reading Google's
   result pages from an app is against Google's terms. In-app result grids (Google, SteamGridDB) are
   out of scope.
-- Choosing artwork is offered on Home; game pages and other sections show the chosen artwork wherever
-  they already show artwork, without their own "change" actions.
+- Choosing artwork is offered on Home and on the Details pages of installed games and programs;
+  other sections show the chosen artwork wherever they already show artwork.
 - Which image to use, and its rights, is the player's choice; the artwork stays on their Mac.

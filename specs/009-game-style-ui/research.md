@@ -27,7 +27,7 @@
 
 ## Featured game
 
-- **Decision**: the most-played installed title; else the most recently added (Steam manifest file
+- **Decision** (changed 2026-10-02, was "most-played"): the installed title played last; else the most recently added (Steam manifest file
   date, or the creation date of the wrapper's `Contents` folder for programs; the `.app` folder
   keeps the Sikarugir template's date); else the best-rated compatible game with a Steam id
   that MacPlay hand-tuned.

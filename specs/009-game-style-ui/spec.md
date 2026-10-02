@@ -103,8 +103,9 @@ play-time totals have no source in MacPlay.
 
 ### Key Entities
 
-- **Featured game**: the game the banner shows (the most-played installed game, else the most
-  recently installed, else a well-rated compatible game when nothing is installed).
+- **Featured game**: the game the banner shows (the installed game played last, else the most
+  recently installed, else a well-rated compatible game when nothing is installed). Until
+  2026-10-02 it was the most-played game; the player found that it stuck to one title.
 - **Play time**: seconds played per Steam game or program, recorded locally while MacPlay is open.
 - **Game card**: title, artwork, status (installed / compatibility rating), primary action.
 

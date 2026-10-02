@@ -9,6 +9,11 @@
 
 Compatible games that are not installed get no entry points.
 
+## Entry points (Details pages)
+
+An Artwork box on the page of an installed Steam game and of a program: cover and banner previews,
+each with "Change cover…" / "Change banner…" and, for a chosen image, "Use default artwork".
+
 ## Sheet
 
 1. Title: "Cover for <name>" / "Banner for <name>".

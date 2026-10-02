@@ -52,6 +52,12 @@
 - [X] T016 Quickstart walk-through with the player (cover applied and working; rename, uninstall and the FR/ID pass not reported)
 - [X] T017 Set `**Status**` to Implemented in `specs/010-custom-cover/spec.md`
 
+## Phase 7: Follow-up (2026-10-02)
+
+- [X] T018 [US2] `ArtworkBox` in `app/Sources/MacPlay/CoverPicker.swift`: cover and banner previews with "Change cover…" / "Change banner…" and "Use default artwork"; shown on `AppDetail` in `app/Sources/MacPlay/AppsView.swift` and `InstalledDetail` in `app/Sources/MacPlay/InstalledView.swift`
+- [X] T019 Unit tests in `app/Tests/MacPlayTests/`: image intake, the artwork store (in a temporary folder), the play-time rename merge
+- [ ] T020 Walk-through with the player: change and reset a cover from a Details page
+
 ## Dependencies & Execution Order
 
 - T001 → T002–T004 → T005 → US1 (T006–T007) → US2 (T008–T009) → US3 (T010–T011) → Polish.
