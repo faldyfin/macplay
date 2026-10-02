@@ -34,16 +34,26 @@ final class PlayTime: ObservableObject {
         sample(counting: false)  // show what runs right away, without adding time
     }
 
-    /// Keeps a program's time when it is renamed; merges if the new name has history.
+    /// Keeps a program's time when it is renamed.
     func rename(from oldKey: String, to newKey: String) {
-        guard oldKey != newKey, let old = entries.removeValue(forKey: oldKey) else { return }
-        if let existing = entries[newKey] {
-            entries[newKey] = Entry(seconds: existing.seconds + old.seconds,
-                                    lastPlayed: max(existing.lastPlayed, old.lastPlayed))
-        } else {
-            entries[newKey] = old
-        }
+        guard let moved = Self.renamed(entries, from: oldKey, to: newKey) else { return }
+        entries = moved
         Self.save(entries)
+    }
+
+    /// The entries with `oldKey` moved to `newKey`, merged if the new name has history;
+    /// nil when there is nothing to move.
+    static func renamed(_ entries: [String: Entry], from oldKey: String, to newKey: String) -> [String: Entry]? {
+        guard oldKey != newKey, let old = entries[oldKey] else { return nil }
+        var result = entries
+        result[oldKey] = nil
+        if let existing = result[newKey] {
+            result[newKey] = Entry(seconds: existing.seconds + old.seconds,
+                                   lastPlayed: max(existing.lastPlayed, old.lastPlayed))
+        } else {
+            result[newKey] = old
+        }
+        return result
     }
 
     var totalSeconds: Double { entries.values.reduce(0) { $0 + $1.seconds } }

@@ -6,7 +6,13 @@ import UniformTypeIdentifiers
 /// `app:<name>`). Kept in Application Support: unlike Steam's artwork it can't be fetched again.
 final class ChosenArt: ObservableObject {
     static let shared = ChosenArt()
-    static let folder = NSHomeDirectory() + "/Library/Application Support/MacPlay/art"
+    static let defaultFolder = NSHomeDirectory() + "/Library/Application Support/MacPlay/art"
+
+    let folder: String
+
+    init(folder: String = ChosenArt.defaultFolder) {
+        self.folder = folder
+    }
 
     /// Bumped on every change so artwork views reload.
     @Published private(set) var revision = 0
@@ -17,7 +23,7 @@ final class ChosenArt: ObservableObject {
     func path(_ key: String, _ kind: GameArt.Kind) -> String {
         // percent-encoding keeps any program name a valid, unique file name
         let name = key.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? key
-        return Self.folder + "/\(name)-\(kind).jpg"
+        return folder + "/\(name)-\(kind).jpg"
     }
 
     func has(_ key: String, _ kind: GameArt.Kind) -> Bool {
@@ -33,7 +39,7 @@ final class ChosenArt: ObservableObject {
     }
 
     func save(_ image: CGImage, key: String, kind: GameArt.Kind) throws {
-        try FileManager.default.createDirectory(atPath: Self.folder, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(atPath: folder, withIntermediateDirectories: true)
         let data = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil)
         else { throw Engine.fail(L.t("Could not save the image.", "Impossible d'enregistrer l'image.", "Gambar tidak bisa disimpan.")) }
