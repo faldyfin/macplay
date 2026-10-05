@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-30T14:11:49Z",
+ "generated_at": "2026-10-05T10:23:16Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -18164,6 +18164,20 @@
    "source_url": "https://www.applegamingwiki.com/wiki/Simon%27s_Cat%3A_Story_Time"
   },
   {
+   "id": "agw-simrail-the-railway-simulator",
+   "title": "SimRail - The Railway Simulator",
+   "steam_appid": 1422130,
+   "status": "silver",
+   "backend": "",
+   "notes": "Runs with DXMT (recommended) or D3DMetal. CPU-bound on a base M4, around 19 FPS regardless of resolution. 16 GB RAM is tight.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/SimRail_-_The_Railway_Simulator",
+   "wiki_rating": "playable",
+   "wiki_method": "crossover",
+   "wiki_reported": "2026-10-04",
+   "wiki_url": "https://www.applegamingwiki.com/wiki/SimRail_-_The_Railway_Simulator"
+  },
+  {
    "id": "agw-sir-you-are-being-hunted",
    "title": "Sir, You Are Being Hunted",
    "steam_appid": null,
@@ -21232,6 +21246,20 @@
    "wiki_method": "crossover",
    "wiki_reported": null,
    "wiki_url": "https://www.applegamingwiki.com/wiki/The_Sims_4"
+  },
+  {
+   "id": "agw-the-sims-2-legacy-collection",
+   "title": "The Sims™ 2 Legacy Collection",
+   "steam_appid": 3314070,
+   "status": "gold",
+   "backend": "",
+   "notes": "Game runs with D3DMetal and MSync enabled.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/The_Sims%E2%84%A2_2_Legacy_Collection",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/The_Sims%E2%84%A2_2_Legacy_Collection"
   },
   {
    "id": "agw-the-sinking-city",
