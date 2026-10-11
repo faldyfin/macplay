@@ -159,7 +159,8 @@ enum WindowsApps {
         let added = exeFiles(in: app.driveC).subtracting(before)
         let installLog = isPackage(installer) ? msiLogPath(for: app) : logPath(for: app)
 
-        guard let program = pickMainProgram(Array(added), appName: name) else {
+        let consoles = Set(added.filter { isConsoleProgram(atPath: app.driveC + $0) })
+        guard let program = pickMainProgram(Array(added), appName: name, consolePrograms: consoles) else {
             throw Engine.fail(L.t("No installed program found (installer exit code \(code)). If you cancelled the installer, uninstall this app and try again; otherwise pick the program with “Change…”. Log: \(installLog)",
                                   "Aucun programme installé trouvé (code de sortie \(code)). Si tu as annulé l'installeur, désinstalle cette app et réessaie ; sinon choisis le programme avec « Changer… ». Journal : \(installLog)",
                                   "Tidak ada program terinstal yang ditemukan (kode keluar installer \(code)). Kalau kamu membatalkan installer, hapus app ini lalu coba lagi; kalau tidak, pilih programnya lewat “Ganti…”. Log: \(installLog)"))
@@ -222,19 +223,38 @@ enum WindowsApps {
     }
 
     /// Best guess at the program an installer added: skip uninstallers, updaters
-    /// and crash reporters, prefer a file named like the app, then the shallowest.
-    static func pickMainProgram(_ candidates: [String], appName: String) -> String? {
+    /// and crash reporters, prefer a file named like the app, then a windowed program
+    /// over a console tool (7-Zip's package installs 7z.exe next to 7zFM.exe), then
+    /// the shallowest.
+    static func pickMainProgram(_ candidates: [String], appName: String,
+                                consolePrograms: Set<String> = []) -> String? {
         let noise = ["unins", "setup", "install", "update", "crash", "report", "helper", "redist", "elevate"]
         let key = appName.lowercased().filter { $0.isLetter || $0.isNumber }
         func fileKey(_ path: String) -> String {
             ((path as NSString).lastPathComponent as NSString).deletingPathExtension.lowercased()
         }
         let usable = candidates.filter { path in !noise.contains { fileKey(path).contains($0) } }
-        func rank(_ path: String) -> (Int, Int, String) {
+        func rank(_ path: String) -> (Int, Int, Int, String) {
             let nameMatch = !key.isEmpty && fileKey(path).filter { $0.isLetter || $0.isNumber }.contains(key)
-            return (nameMatch ? 0 : 1, path.split(separator: "/").count, path)
+            return (nameMatch ? 0 : 1, consolePrograms.contains(path) ? 1 : 0, path.split(separator: "/").count, path)
         }
         return usable.min { rank($0) < rank($1) }
+    }
+
+    /// Whether a Windows executable is a console program, from the Subsystem field of
+    /// its PE header (3 = console, 2 = windowed; at offset 68 of the optional header in
+    /// both 32- and 64-bit files). Anything unreadable counts as windowed.
+    static func isConsoleProgram(atPath path: String) -> Bool {
+        guard let handle = FileHandle(forReadingAtPath: path) else { return false }
+        defer { try? handle.close() }
+        guard let dos = try? handle.read(upToCount: 64).map(Array.init), dos.count == 64,
+              dos[0] == 0x4D, dos[1] == 0x5A else { return false }  // "MZ"
+        let peOffset = dos[0x3C...0x3F].reversed().reduce(0) { $0 << 8 | Int($1) }
+        guard (try? handle.seek(toOffset: UInt64(peOffset))) != nil,
+              let pe = try? handle.read(upToCount: 24 + 70).map(Array.init), pe.count == 24 + 70,
+              pe[0..<4] == [0x50, 0x45, 0, 0] else { return false }  // "PE\0\0"
+        let subsystem = Int(pe[24 + 68]) | Int(pe[24 + 69]) << 8
+        return subsystem == 3
     }
 
     // MARK: settings
