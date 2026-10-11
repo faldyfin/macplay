@@ -13,7 +13,8 @@ Icons only; the name shows as a tooltip; the current section has a coral backgro
 4. "Runs great on your Mac": hand-tuned gold games with a Steam id that are not installed.
 5. Search results replace rows 2–4 while the search field has text.
 6. Right column: Running now, Your Mac, Play time (total, top 3, "counted while MacPlay is open"),
-   Recently added. When the window is too narrow for it, the same cards follow the rows.
+   Recently added. When the window is too narrow for it, the same cards follow the rows. Play time
+   and Recently added cover games only, not programs in My Apps (2026-10-11).
 
 ## Theme
 

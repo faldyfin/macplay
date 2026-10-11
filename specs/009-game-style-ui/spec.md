@@ -100,13 +100,16 @@ play-time totals have no source in MacPlay.
 - **FR-007**: All new text MUST exist in English, French and Indonesian.
 - **FR-008**: MacPlay MUST record play time per Steam game and per program while it is open, keep it
   only on this Mac, and show the total and the most-played titles. It is never sent anywhere.
+  Changed 2026-10-11 at the player's request: only games count (Steam games and programs in My
+  Games); programs in My Apps collect no play time and are left out of Recently added.
 
 ### Key Entities
 
 - **Featured game**: the game the banner shows (the installed game played last, else the most
   recently installed, else a well-rated compatible game when nothing is installed). Until
   2026-10-02 it was the most-played game; the player found that it stuck to one title.
-- **Play time**: seconds played per Steam game or program, recorded locally while MacPlay is open.
+- **Play time**: seconds played per Steam game or program in My Games, recorded locally while MacPlay
+  is open.
 - **Game card**: title, artwork, status (installed / compatibility rating), primary action.
 
 ## Success Criteria *(mandatory)*

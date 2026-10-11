@@ -28,8 +28,11 @@
 ## Featured game
 
 - **Decision** (changed 2026-10-02, was "most-played"): the installed title played last; else the most recently added (Steam manifest file
-  date, or the creation date of the wrapper's `Contents` folder for programs; the `.app` folder
-  keeps the Sikarugir template's date); else the best-rated compatible game with a Steam id
+  date, or the creation date of the wrapper's C: drive, `prefix/drive_c`, for programs). Corrected
+  2026-10-11: this said the `Contents` folder, which was wrong. `.app`, `Contents` and `Info.plist`
+  carry the dates stored in the template archive (every wrapper's `Contents` reads 2026-09-24
+  11:16); Wine creates `drive_c` during the install (Steam 2026-09-30 14:16, Heartopia 2026-09-30
+  13:39, IAP 2026-10-11 21:51).; else the best-rated compatible game with a Steam id
   that MacPlay hand-tuned.
 
 ## Navigation

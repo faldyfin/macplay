@@ -44,7 +44,7 @@ against live data, and the [quickstart](quickstart.md).
 **Goal**: right column on Home.
 **Independent test**: quickstart step 4.
 
-- [X] T014 [US3] Right column in `app/Sources/MacPlay/HomeView.swift`: Running now, Your Mac (chip, memory, GPU), Play time (total, top 3, "counted while MacPlay is open"), Recently added (Steam manifest file dates, wrapper `Contents` folder dates)
+- [X] T014 [US3] Right column in `app/Sources/MacPlay/HomeView.swift`: Running now, Your Mac (chip, memory, GPU), Play time (total, top 3, "counted while MacPlay is open"), Recently added (Steam manifest file dates; for programs the creation date of the wrapper's `drive_c` — corrected 2026-10-11, was the `Contents` folder)
 - [X] T015 [US3] Start the play-time tracker when MacPlay launches in `app/Sources/MacPlay/MacPlayApp.swift`
 
 ## Phase 6: Polish & Cross-Cutting

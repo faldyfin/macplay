@@ -88,11 +88,13 @@ check its files are gone.
 ### Functional Requirements
 
 - **FR-001**: Players MUST be able to install a Windows program from its setup `.exe` and name it,
-  with a name suggested from the file name.
+  with a name suggested from the file name. Since 012, a Windows Installer package (`.msi`) works
+  the same way.
 - **FR-002**: Each program MUST get its own environment, independent of Steam's and of other
   programs, so uninstalling one never affects another.
 - **FR-003**: The system MUST find the installed main program automatically and let the player
-  choose another program inside that app's drive.
+  choose another program inside that app's drive. Since 012 a windowed program is preferred over a
+  console tool when no file is named like the app.
 - **FR-004**: Players MUST be able to launch and stop an app; stopping MUST also close games it
   started.
 - **FR-005**: Each app MUST have its own graphics engine choice and optional launch options, applied
