@@ -150,8 +150,9 @@ struct HomeView: View {
             let manifest = SteamLibrary.steamappsPath + "/appmanifest_\(g.appid).acf"
             return (try? fm.attributesOfItem(atPath: manifest))?[.modificationDate] as? Date
         case .program(let a):
-            // the .app folder keeps the Sikarugir template's date; Contents is made per wrapper
-            return (try? fm.attributesOfItem(atPath: a.wrapperPath + "/Contents"))?[.creationDate] as? Date
+            // Wine creates the C: drive during the install; the .app, Contents and Info.plist
+            // carry the dates stored in the Sikarugir template archive
+            return (try? fm.attributesOfItem(atPath: a.driveC))?[.creationDate] as? Date
         case .compatible:
             return nil
         }
