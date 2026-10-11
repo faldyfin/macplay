@@ -105,6 +105,8 @@ struct CoverPicker: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: previewSize.width, height: previewSize.height)
+                    // its clipped overflow would otherwise cover the buttons around the preview
+                    .allowsHitTesting(false)
             } else {
                 VStack(spacing: 8) {
                     Image(systemName: "photo.on.rectangle.angled").font(.system(size: 28))

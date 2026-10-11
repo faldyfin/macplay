@@ -80,6 +80,9 @@ struct ArtImage: View {
                     Image(nsImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        // clipping hides the overflow but doesn't stop it catching clicks,
+                        // which let a 4:3 banner cover Home's search field
+                        .allowsHitTesting(false)
                         .transition(.opacity)
                 }
             }
