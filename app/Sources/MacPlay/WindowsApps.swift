@@ -83,6 +83,28 @@ enum WindowsApps {
         Engine.cachePath + "/" + app.name + "-install.log"
     }
 
+    /// Windows Installer's own detailed log, for installs from an .msi.
+    static func msiLogPath(for app: WindowsApp) -> String {
+        Engine.cachePath + "/" + app.name + "-install-msi.log"
+    }
+
+    static func isPackage(_ installer: URL) -> Bool {
+        installer.pathExtension.lowercased() == "msi"
+    }
+
+    /// A Mac path as Wine sees it: the template prefix maps Z: to /.
+    static func windowsPath(_ path: String) -> String {
+        "Z:" + path.replacingOccurrences(of: "/", with: "\\")
+    }
+
+    /// Arguments for the wrapper's wine: the setup .exe itself, or for a Windows Installer
+    /// package, msiexec with its full interface and a detailed log. msiexec passes the
+    /// package path on as given, so both paths are absolute Windows paths.
+    static func installerArguments(for installer: URL, msiLog: String) -> [String] {
+        guard isPackage(installer) else { return [installer.path] }
+        return ["msiexec", "/i", windowsPath(installer.path), "/l*v", windowsPath(msiLog)]
+    }
+
     // MARK: install
 
     static func install(installer: URL, name: String, category: WindowsApp.Category,
@@ -135,11 +157,12 @@ enum WindowsApps {
                  "Menjalankan installer — ikuti jendelanya. MacPlay menunggu sampai ditutup."))
         let code = try runInstaller(installer, in: app)
         let added = exeFiles(in: app.driveC).subtracting(before)
+        let installLog = isPackage(installer) ? msiLogPath(for: app) : logPath(for: app)
 
         guard let program = pickMainProgram(Array(added), appName: name) else {
-            throw Engine.fail(L.t("No installed program found (installer exit code \(code)). If you cancelled the installer, uninstall this app and try again; otherwise pick the program with “Change…”. Log: \(logPath(for: app))",
-                                  "Aucun programme installé trouvé (code de sortie \(code)). Si tu as annulé l'installeur, désinstalle cette app et réessaie ; sinon choisis le programme avec « Changer… ». Journal : \(logPath(for: app))",
-                                  "Tidak ada program terinstal yang ditemukan (kode keluar installer \(code)). Kalau kamu membatalkan installer, hapus app ini lalu coba lagi; kalau tidak, pilih programnya lewat “Ganti…”. Log: \(logPath(for: app))"))
+            throw Engine.fail(L.t("No installed program found (installer exit code \(code)). If you cancelled the installer, uninstall this app and try again; otherwise pick the program with “Change…”. Log: \(installLog)",
+                                  "Aucun programme installé trouvé (code de sortie \(code)). Si tu as annulé l'installeur, désinstalle cette app et réessaie ; sinon choisis le programme avec « Changer… ». Journal : \(installLog)",
+                                  "Tidak ada program terinstal yang ditemukan (kode keluar installer \(code)). Kalau kamu membatalkan installer, hapus app ini lalu coba lagi; kalau tidak, pilih programnya lewat “Ganti…”. Log: \(installLog)"))
         }
         try updatePlist(of: app) { $0["Program Name and Path"] = program }
         emit(L.t("Program found: \(program)", "Programme trouvé : \(program)", "Program ditemukan: \(program)"))
@@ -166,7 +189,7 @@ enum WindowsApps {
 
         let p = Process()
         p.executableURL = URL(fileURLWithPath: app.wrapperPath + "/Contents/SharedSupport/wine/bin/wine")
-        p.arguments = [installer.path]
+        p.arguments = installerArguments(for: installer, msiLog: msiLogPath(for: app))
         p.currentDirectoryURL = installer.deletingLastPathComponent()
         var env = ProcessInfo.processInfo.environment.merging(Engine.wineEnv(for: app.wrapperPath)) { _, new in new }
         env["WINEDLLOVERRIDES"] = "winemenubuilder.exe=d"  // no host menu entries outside the wrapper

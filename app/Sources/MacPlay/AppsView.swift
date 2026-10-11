@@ -2,12 +2,17 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
-/// Finder picker for a Windows .exe. `insidePackages` lets it browse into a
-/// wrapper bundle, where an app's C: drive lives.
-func pickExe(message: String, startIn directory: URL?, insidePackages: Bool = false) -> URL? {
+let exeType = UTType(filenameExtension: "exe") ?? .data
+/// macOS declares no type for .msi; this dynamic one is what it gives .msi files.
+let msiType = UTType(filenameExtension: "msi") ?? .data
+
+/// Finder picker for a Windows program or installer. `insidePackages` lets it browse
+/// into a wrapper bundle, where an app's C: drive lives.
+func pickWindowsFile(message: String, types: [UTType] = [exeType], startIn directory: URL?,
+                     insidePackages: Bool = false) -> URL? {
     let panel = NSOpenPanel()
     panel.message = message
-    panel.allowedContentTypes = [UTType(filenameExtension: "exe") ?? .data]
+    panel.allowedContentTypes = types
     panel.canChooseDirectories = false
     panel.allowsMultipleSelection = false
     panel.treatsFilePackagesAsDirectories = insidePackages
@@ -41,12 +46,12 @@ struct AppsView: View {
                                 .font(.system(size: 32, weight: .thin))
                                 .foregroundStyle(.tertiary)
                             Text(category == .game
-                                 ? L.t("No games yet.\nInstall a game or a launcher from its setup .exe.",
-                                       "Aucun jeu.\nInstalle un jeu ou un launcher depuis son .exe d'installation.",
-                                       "Belum ada game.\nInstal game atau launcher dari file .exe instalasinya.")
-                                 : L.t("No apps yet.\nInstall a Windows program from its setup .exe.",
-                                       "Aucune app.\nInstalle un programme Windows depuis son .exe d'installation.",
-                                       "Belum ada app.\nInstal program Windows dari file .exe instalasinya."))
+                                 ? L.t("No games yet.\nInstall a game or a launcher from its setup .exe or .msi.",
+                                       "Aucun jeu.\nInstalle un jeu ou un launcher depuis son .exe ou .msi d'installation.",
+                                       "Belum ada game.\nInstal game atau launcher dari file .exe atau .msi instalasinya.")
+                                 : L.t("No apps yet.\nInstall a Windows program from its setup .exe or .msi.",
+                                       "Aucune app.\nInstalle un programme Windows depuis son .exe ou .msi d'installation.",
+                                       "Belum ada app.\nInstal program Windows dari file .exe atau .msi instalasinya."))
                                 .multilineTextAlignment(.center)
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
@@ -91,12 +96,12 @@ struct AppsView: View {
                         .font(.system(size: 40, weight: .thin))
                         .foregroundStyle(.tertiary)
                     Text(category == .game
-                         ? L.t("Install a Windows game or game launcher (TapTap, Battle.net…) from its .exe",
-                               "Installe un jeu ou un launcher Windows (TapTap, Battle.net…) depuis son .exe",
-                               "Instal game atau launcher game Windows (TapTap, Battle.net…) dari file .exe-nya")
-                         : L.t("Install any other Windows program from its .exe",
-                               "Installe n'importe quel autre programme Windows depuis son .exe",
-                               "Instal program Windows lainnya dari file .exe-nya"))
+                         ? L.t("Install a Windows game or game launcher (TapTap, Battle.net…) from its .exe or .msi",
+                               "Installe un jeu ou un launcher Windows (TapTap, Battle.net…) depuis son .exe ou .msi",
+                               "Instal game atau launcher game Windows (TapTap, Battle.net…) dari file .exe atau .msi-nya")
+                         : L.t("Install any other Windows program from its .exe or .msi",
+                               "Installe n'importe quel autre programme Windows depuis son .exe ou .msi",
+                               "Instal program Windows lainnya dari file .exe atau .msi-nya"))
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -118,13 +123,14 @@ struct AppsView: View {
 
     private func chooseInstaller() {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
-        guard let url = pickExe(message: category == .game
-                                    ? L.t("Choose the game's or launcher's setup .exe",
-                                          "Choisis le .exe d'installation du jeu ou du launcher",
-                                          "Pilih file .exe instalasi game atau launcher")
-                                    : L.t("Choose the program's setup .exe",
-                                          "Choisis le .exe d'installation du programme",
-                                          "Pilih file .exe instalasi program"),
+        guard let url = pickWindowsFile(message: category == .game
+                                    ? L.t("Choose the game's or launcher's setup .exe or .msi",
+                                          "Choisis le .exe ou .msi d'installation du jeu ou du launcher",
+                                          "Pilih file .exe atau .msi instalasi game atau launcher")
+                                    : L.t("Choose the program's setup .exe or .msi",
+                                          "Choisis le .exe ou .msi d'installation du programme",
+                                          "Pilih file .exe atau .msi instalasi program"),
+                                types: [exeType, msiType],
                                 startIn: downloads)
         else { return }
         selected = nil
@@ -440,7 +446,7 @@ struct AppDetail: View {
     }
 
     private func changeProgram() {
-        guard let url = pickExe(message: L.t("Choose the program MacPlay should launch",
+        guard let url = pickWindowsFile(message: L.t("Choose the program MacPlay should launch",
                                              "Choisis le programme que MacPlay doit lancer",
                                              "Pilih program yang harus dijalankan MacPlay"),
                                 startIn: URL(fileURLWithPath: app.driveC),
