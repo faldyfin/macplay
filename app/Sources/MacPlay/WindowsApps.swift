@@ -150,6 +150,7 @@ enum WindowsApps {
                      "Les polices de base n'ont pas pu être installées — certains jeux risquent de n'afficher aucun texte.",
                      "Font inti gagal diinstal — beberapa game mungkin tidak menampilkan teks."))
         }
+        _ = standInForSegoeUI(wrapper: app.wrapperPath, env: fontsEnv)
 
         let before = exeFiles(in: app.driveC)
         emit(L.t("Running the installer — follow its window. MacPlay waits until it closes.",
@@ -176,6 +177,16 @@ enum WindowsApps {
                      "L'installeur l'a laissé ouvert. Arrête-le puis lance-le depuis MacPlay pour que le moteur graphique s'applique à lui et à ses jeux.",
                      "Installer membiarkannya tetap berjalan. Hentikan lalu jalankan dari MacPlay supaya engine grafis berlaku untuknya dan game-gamenya."))
         }
+    }
+
+    /// Segoe UI, the Windows interface font, can't be redistributed. .NET programs that ask
+    /// for it by name stop at startup without it (IAP Desktop: "FontFamily could not be
+    /// found"), so Wine draws Tahoma, which it ships, in its place.
+    static func standInForSegoeUI(wrapper: String, env: [String: String]) -> Bool {
+        Engine.sh(wrapper + "/Contents/SharedSupport/wine/bin/wine",
+                  ["reg", "add", "HKCU\\Software\\Wine\\Fonts\\Replacements", "/v", "Segoe UI",
+                   "/t", "REG_SZ", "/d", "Tahoma", "/f"],
+                  env: env).code == 0
     }
 
     /// Runs the setup with the wrapper's own wine (no graphics backend needed).
