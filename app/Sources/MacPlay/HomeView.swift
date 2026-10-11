@@ -135,6 +135,12 @@ struct HomeView: View {
         return runsGreat.first
     }
 
+    /// Play time shown on Home: games only, not the programs in My Apps.
+    private var gameTime: [(key: String, entry: PlayTime.Entry)] {
+        PlayTime.gamesOnly(playTime.entries,
+                           excluding: Set(programs.filter { $0.category == .app }.map { PlayTime.appKey($0.name) }))
+    }
+
     /// The installed item played most recently; nil when none has been played yet.
     static func lastPlayed(_ items: [HomeItem], entries: [String: PlayTime.Entry]) -> HomeItem? {
         items
@@ -475,10 +481,10 @@ struct HomeView: View {
 
         GroupBox(L.t("Play time", "Temps de jeu", "Waktu bermain")) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(playTimeText(playTime.totalSeconds))
+                Text(playTimeText(gameTime.reduce(0) { $0 + $1.entry.seconds }))
                     .font(Theme.title(28))
                     .foregroundStyle(Theme.accent)
-                ForEach(playTime.mostPlayed.prefix(3), id: \.key) { top in
+                ForEach(gameTime.prefix(3), id: \.key) { top in
                     HStack {
                         Text(title(forPlayKey: top.key)).lineLimit(1).foregroundStyle(Theme.text)
                         Spacer()
@@ -495,7 +501,7 @@ struct HomeView: View {
 
         GroupBox(L.t("Recently added", "Ajoutés récemment", "Baru ditambahkan")) {
             VStack(alignment: .leading, spacing: 6) {
-                let recent = (steamGames.map(item) + programs.map(item))
+                let recent = yourGames
                     .compactMap { i in addedDate(i).map { (i, $0) } }
                     .sorted { $0.1 > $1.1 }
                     .prefix(3)

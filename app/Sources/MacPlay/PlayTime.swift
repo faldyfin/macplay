@@ -56,20 +56,23 @@ final class PlayTime: ObservableObject {
         return result
     }
 
-    var totalSeconds: Double { entries.values.reduce(0) { $0 + $1.seconds } }
-
-    var mostPlayed: [(key: String, entry: Entry)] {
-        entries.sorted { $0.value.seconds > $1.value.seconds }.map { (key: $0.key, entry: $0.value) }
+    /// Play time for games, most played first: everything but the programs in My Apps
+    /// (`apps`, their keys). Their older entries stay stored, so moving one to My Games
+    /// brings its time back.
+    static func gamesOnly(_ entries: [String: Entry], excluding apps: Set<String>) -> [(key: String, entry: Entry)] {
+        entries.filter { !apps.contains($0.key) }
+            .sorted { $0.value.seconds > $1.value.seconds }
+            .map { (key: $0.key, entry: $0.value) }
     }
 
     private func sample(counting: Bool) {
         DispatchQueue.global(qos: .utility).async {
             let found = Self.runningKeys()
             DispatchQueue.main.async {
-                self.running = found
-                guard counting, !found.isEmpty else { return }
+                self.running = found.all
+                guard counting, !found.counted.isEmpty else { return }
                 let now = Date()
-                for key in found {
+                for key in found.counted {
                     var entry = self.entries[key] ?? Entry(seconds: 0, lastPlayed: now)
                     entry.seconds += Self.tick
                     entry.lastPlayed = now
@@ -81,20 +84,22 @@ final class PlayTime: ObservableObject {
     }
 
     /// Steam games by their install folder in a process path; programs while their
-    /// wrapper has a Wine session.
-    static func runningKeys() -> [String] {
+    /// wrapper has a Wine session. Only games collect time: `counted` leaves out My Apps.
+    static func runningKeys() -> (all: [String], counted: [String]) {
         let processes = Engine.sh("/bin/ps", ["-axww", "-o", "command"]).out
-        var keys: [String] = []
+        var all: [String] = [], counted: [String] = []
         for game in SteamLibrary.installedGames()
         where processes.range(of: game.processPattern, options: [.regularExpression, .caseInsensitive]) != nil {
-            keys.append(steamKey(game.appid))
+            all.append(steamKey(game.appid))
+            counted.append(steamKey(game.appid))
         }
         for app in WindowsApps.list()
         where processes.range(of: NSRegularExpression.escapedPattern(for: app.wrapperPath) + ".*wineserver",
                               options: .regularExpression) != nil {
-            keys.append(appKey(app.name))
+            all.append(appKey(app.name))
+            if app.category == .game { counted.append(appKey(app.name)) }
         }
-        return keys
+        return (all, counted)
     }
 
     private static func load() -> [String: Entry] {

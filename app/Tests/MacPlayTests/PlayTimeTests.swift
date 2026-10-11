@@ -25,6 +25,14 @@ final class PlayTimeTests: XCTestCase {
         XCTAssertNil(PlayTime.renamed(["app:A": PlayTime.Entry(seconds: 1, lastPlayed: day)], from: "app:A", to: "app:A"))
     }
 
+    func testProgramsInMyAppsAreLeftOutOfPlayTime() {
+        let entries = [PlayTime.steamKey("1426210"): PlayTime.Entry(seconds: 60, lastPlayed: day),
+                       PlayTime.appKey("Heartopia"): PlayTime.Entry(seconds: 7200, lastPlayed: day),
+                       PlayTime.appKey("IAP"): PlayTime.Entry(seconds: 360, lastPlayed: day)]
+        let shown = PlayTime.gamesOnly(entries, excluding: [PlayTime.appKey("IAP")])
+        XCTAssertEqual(shown.map(\.key), [PlayTime.appKey("Heartopia"), PlayTime.steamKey("1426210")])
+    }
+
     func testPlayTimeText() {
         let saved = UserDefaults.standard.string(forKey: "lang")
         defer { UserDefaults.standard.set(saved, forKey: "lang") }
