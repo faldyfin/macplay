@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-05T10:23:16Z",
+ "generated_at": "2026-10-12T10:45:49Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -3542,21 +3542,6 @@
    "wiki_method": "crossover",
    "wiki_reported": null,
    "wiki_url": "https://www.applegamingwiki.com/wiki/Call_of_Duty_4%3A_Modern_Warfare_2"
-  },
-  {
-   "id": "awacy-call-of-duty-black-ops-cold-war",
-   "title": "Call of Duty Black Ops: Cold War",
-   "steam_appid": 1985810,
-   "status": "blocked",
-   "backend": "none",
-   "notes": "Treyarch Anti-Cheat does not run under Wine on Linux/Proton (Broken), so it is not expected to run on a Mac either.",
-   "source": "areweanticheatyet",
-   "source_url": "https://areweanticheatyet.com/game/call-of-duty-black-ops-cold-war",
-   "anticheat_status": "Broken",
-   "anticheats": [
-    "Treyarch Anti-Cheat"
-   ],
-   "anticheat_url": "https://areweanticheatyet.com/game/call-of-duty-black-ops-cold-war"
   },
   {
    "id": "agw-call-of-duty-black-ops",
@@ -14057,6 +14042,20 @@
    "wiki_url": "https://www.applegamingwiki.com/wiki/Need_for_Speed_Rivals"
   },
   {
+   "id": "agw-need-for-speed-unbound",
+   "title": "Need for Speed Unbound",
+   "steam_appid": 1846380,
+   "status": "silver",
+   "backend": "",
+   "notes": "The game can be launched via Steam bottle using D3DMetal after applying a black screen/crash fix.Link fix: https://www.codeweavers.com/compatibility/crossover/tips/need-for-speed-unbound/fix-for-the-startup-black-screen-on-steam-build-16690907",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Need_for_Speed_Unbound",
+   "wiki_rating": "playable",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Need_for_Speed_Unbound"
+  },
+  {
    "id": "agw-need-for-speed-carbon",
    "title": "Need For Speed: Carbon",
    "steam_appid": null,
@@ -15883,6 +15882,20 @@
     "BattlEye"
    ],
    "anticheat_url": "https://areweanticheatyet.com/game/propnight"
+  },
+  {
+   "id": "agw-psychonauts",
+   "title": "Psychonauts",
+   "steam_appid": null,
+   "status": "gold",
+   "backend": "",
+   "notes": "The best way to run Psychonauts on an Apple Silicon Mac (as of 2026) is to use Crossover Preview (which uses FEX instead of Rosetta 2) and use the environment variable FEX_X87REDUCEDPRECISION=1 in the Crossover run command. I'm able to get a near-flawless 120fps with this method. The Rosetta versio…",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Psychonauts",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": "2026-10-11",
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Psychonauts"
   },
   {
    "id": "agw-psychonauts-2",
@@ -17881,6 +17894,16 @@
    "wiki_method": "crossover",
    "wiki_reported": "2024-09-17",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Session%3A_Skate_Sim"
+  },
+  {
+   "id": "agw-shadeburn-racer",
+   "title": "Shadeburn Racer",
+   "steam_appid": null,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Shadeburn_Racer"
   },
   {
    "id": "awacy-shadow-arena",
