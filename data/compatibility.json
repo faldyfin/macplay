@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-12T10:45:49Z",
+ "generated_at": "2026-10-19T08:49:48Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -1021,14 +1021,14 @@
    "id": "agw-animal-well",
    "title": "Animal Well",
    "steam_appid": 813230,
-   "status": "borked",
+   "status": "gold",
    "backend": "",
-   "notes": null,
+   "notes": "Enabling D3D Metal creates a game-breaking wave effect in certain levels. Fixed by disabling all the options in the bottle. Also, the game doesn't link up to the printer as needed in the Origami Rabbit puzzle.",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Animal_Well",
-   "wiki_rating": "unplayable",
-   "wiki_method": "wine",
-   "wiki_reported": null,
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": "2024-05-14",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Animal_Well"
   },
   {
@@ -20642,6 +20642,20 @@
    "wiki_method": "crossover",
    "wiki_reported": "2021-04-30",
    "wiki_url": "https://www.applegamingwiki.com/wiki/The_Darkness_II"
+  },
+  {
+   "id": "agw-the-division-resurgence",
+   "title": "The Division Resurgence",
+   "steam_appid": 3749720,
+   "status": "borked",
+   "backend": "",
+   "notes": "Game does not launch under CrossOver 25.1.1. The reporter suspects the anti-cheat.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/The_Division_Resurgence",
+   "wiki_rating": "unplayable",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/The_Division_Resurgence"
   },
   {
    "id": "agw-the-elder-scrolls-iii-morrowind",
