@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-19T08:49:48Z",
+ "generated_at": "2026-10-26T08:52:05Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -1442,7 +1442,7 @@
    "steam_appid": null,
    "status": "gold",
    "backend": "",
-   "notes": "Installation ok, glitches in the base cinematic but very playable{{Refdevice",
+   "notes": "Assassin's Creed Black Flag Resynced. Game version tested: 1.0.7.",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Assassin%27s_Creed_IV%3A_Black_Flag",
    "wiki_rating": "perfect",
@@ -6508,14 +6508,14 @@
    "id": "agw-doom-2016",
    "title": "Doom (2016)",
    "steam_appid": null,
-   "status": "borked",
+   "status": "gold",
    "backend": "",
-   "notes": "Unable to run due to problems with OpenGL",
+   "notes": "Great performance",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Doom_%282016%29",
-   "wiki_rating": "unplayable",
+   "wiki_rating": "perfect",
    "wiki_method": "wine",
-   "wiki_reported": null,
+   "wiki_reported": "2026-10-20",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Doom_%282016%29"
   },
   {
@@ -14047,7 +14047,7 @@
    "steam_appid": 1846380,
    "status": "silver",
    "backend": "",
-   "notes": "The game can be launched via Steam bottle using D3DMetal after applying a black screen/crash fix.Link fix: https://www.codeweavers.com/compatibility/crossover/tips/need-for-speed-unbound/fix-for-the-startup-black-screen-on-steam-build-16690907",
+   "notes": "The game can be launched via Steam bottle using D3DMetal after applying a black screen/crash fix.Link fix: https://www.codeweavers.com/compatibility/crossover/tips/need-for-speed-unbound/fix-for-the-startup-black-screen-on-steam-build-16690907 https://www.reddit.com/r/macgaming/s/7Lf2my2JSU",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Need_for_Speed_Unbound",
    "wiki_rating": "playable",
@@ -19567,7 +19567,7 @@
    "wiki_method": "wine",
    "wiki_reported": "2026-02-28",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Strinova",
-   "anticheat_status": "Broken",
+   "anticheat_status": "Running",
    "anticheats": [
     "Anti-Cheat Expert"
    ],
