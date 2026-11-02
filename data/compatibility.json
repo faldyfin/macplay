@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-26T08:52:05Z",
+ "generated_at": "2026-11-02T11:00:02Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -8924,6 +8924,20 @@
    "wiki_url": "https://www.applegamingwiki.com/wiki/Gauntlet_%282014%29"
   },
   {
+   "id": "agw-gears-of-war-e-day",
+   "title": "Gears of War: E-Day",
+   "steam_appid": null,
+   "status": "gold",
+   "backend": "",
+   "notes": "Important note: An easy-to-apply fix is needed to run the Steam version of the game via CrossOver as of the test date. And only single-player campaign is playable due to Easy Anti-Cheat!",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Gears_of_War%3A_E-Day",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Gears_of_War%3A_E-Day"
+  },
+  {
    "id": "agw-genshin-impact",
    "title": "Genshin Impact",
    "steam_appid": null,
@@ -14497,6 +14511,20 @@
    "wiki_url": "https://www.applegamingwiki.com/wiki/Noita"
   },
   {
+   "id": "agw-nuclear-option",
+   "title": "Nuclear Option",
+   "steam_appid": null,
+   "status": "borked",
+   "backend": "",
+   "notes": "Doesn’t work",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Nuclear_Option",
+   "wiki_rating": "unplayable",
+   "wiki_method": "crossover",
+   "wiki_reported": "2026-03-28",
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Nuclear_Option"
+  },
+  {
    "id": "agw-nuts",
    "title": "Nuts",
    "steam_appid": 768450,
@@ -16795,6 +16823,20 @@
    "wiki_url": "https://www.applegamingwiki.com/wiki/Resident_Evil_Zero"
   },
   {
+   "id": "agw-resonance-a-plague-tale-legacy",
+   "title": "Resonance: A Plague Tale Legacy",
+   "steam_appid": null,
+   "status": "gold",
+   "backend": "",
+   "notes": "Resonance: A Plague Tale Legacy now runs out of the box via CrossOver with GPTK 4 Beta 3 as of testing. Using the Medium vs Low preset makes little difference on M5 Pro. There are some temporary FPS drops in some scenes during gameplay, regardless of graphics settings. Once GPTK is updated to GPTK…",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Resonance%3A_A_Plague_Tale_Legacy",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Resonance%3A_A_Plague_Tale_Legacy"
+  },
+  {
    "id": "awacy-return-alive",
    "title": "Return Alive",
    "steam_appid": 1759220,
@@ -18165,6 +18207,20 @@
    "wiki_method": "crossover",
    "wiki_reported": "2023-11-27",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Signalis"
+  },
+  {
+   "id": "agw-silent-hill-townfall",
+   "title": "Silent Hill: Townfall",
+   "steam_appid": null,
+   "status": "gold",
+   "backend": "",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Silent_Hill%3A_Townfall",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": "2026-09-25",
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Silent_Hill%3A_Townfall"
   },
   {
    "id": "agw-simcity-4",
@@ -21536,9 +21592,9 @@
     }
    ],
    "source": "macplay",
-   "wiki_rating": "playable",
+   "wiki_rating": "perfect",
    "wiki_method": "crossover",
-   "wiki_reported": "2025-01-27",
+   "wiki_reported": "2026-09-30",
    "wiki_url": "https://www.applegamingwiki.com/wiki/The_Witcher_3"
   },
   {
