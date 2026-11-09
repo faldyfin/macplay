@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-02T11:00:02Z",
+ "generated_at": "2026-11-09T11:28:01Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -1640,12 +1640,12 @@
    "steam_appid": null,
    "status": "borked",
    "backend": "",
-   "notes": "Is able toinstall and gives prompt to open but when opened Assetto Corsa closes and send back to steam page.",
+   "notes": "Is able toinstall and gives prompt to open but when opened Assetto Corsa closes and send back to steam page. Runs in Uncork through Steam after installing .NET Framework 4.8, d3dx11_43/d3dcompiler and fonts (Uncork's free \"Prepare to run\" does this); the Steam overlay must be off for the game. Abou…",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Assetto_Corsa",
    "wiki_rating": "unplayable",
    "wiki_method": "wine",
-   "wiki_reported": null,
+   "wiki_reported": "2026-10-03",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Assetto_Corsa"
   },
   {
@@ -4279,12 +4279,12 @@
    "steam_appid": 1903340,
    "status": "gold",
    "backend": "",
-   "notes": "Noticeable stutters when compiling new effects. Works perfectly too :) Works well on M1 Pro with tweaked settings.",
+   "notes": "Works perfect Works alright",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Clair_Obscur%3A_Expedition_33",
    "wiki_rating": "perfect",
-   "wiki_method": "wine",
-   "wiki_reported": "2025-08-18",
+   "wiki_method": "crossover",
+   "wiki_reported": "2026-11-07",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Clair_Obscur%3A_Expedition_33"
   },
   {
@@ -4747,8 +4747,8 @@
    "fixes": [],
    "source": "macplay",
    "wiki_rating": "perfect",
-   "wiki_method": "crossover",
-   "wiki_reported": "2023-10-29",
+   "wiki_method": "wine",
+   "wiki_reported": "2026-09-30",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Counter-Strike_2",
    "anticheat_status": "Supported",
    "anticheats": [
@@ -7268,9 +7268,9 @@
     }
    ],
    "source": "macplay",
-   "wiki_rating": "playable",
-   "wiki_method": "crossover",
-   "wiki_reported": "2025-05-12",
+   "wiki_rating": "perfect",
+   "wiki_method": "wine",
+   "wiki_reported": "2026-11-04",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Elden_Ring",
    "anticheat_status": "Supported",
    "anticheats": [
@@ -13836,12 +13836,56 @@
   {
    "id": "agw-myst",
    "title": "Myst",
-   "steam_appid": null,
+   "steam_appid": 1255560,
    "status": "native",
    "backend": "none",
    "notes": null,
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Myst"
+  },
+  {
+   "id": "agw-myst-iii-exile",
+   "title": "Myst III: Exile",
+   "steam_appid": 925930,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Myst_III%3A_Exile"
+  },
+  {
+   "id": "agw-myst-iv-revelation",
+   "title": "Myst IV: Revelation",
+   "steam_appid": 925940,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Myst_IV%3A_Revelation"
+  },
+  {
+   "id": "agw-myst-online-uru-live",
+   "title": "Myst Online: Uru Live",
+   "steam_appid": null,
+   "status": "silver",
+   "backend": "",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Myst_Online%3A_Uru_Live",
+   "wiki_rating": "playable",
+   "wiki_method": "wine",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Myst_Online%3A_Uru_Live"
+  },
+  {
+   "id": "agw-myst-v-end-of-ages",
+   "title": "Myst V: End of Ages",
+   "steam_appid": 208110,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Myst_V%3A_End_of_Ages"
   },
   {
    "id": "agw-myth-ii-soulblighter",
@@ -16025,7 +16069,11 @@
    "backend": "none",
    "notes": null,
    "source": "applegamingwiki",
-   "source_url": "https://www.applegamingwiki.com/wiki/Quake_2"
+   "source_url": "https://www.applegamingwiki.com/wiki/Quake_2",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Quake_2"
   },
   {
    "id": "agw-quake-3-arena",
@@ -20301,12 +20349,12 @@
    "steam_appid": 1167630,
    "status": "gold",
    "backend": "",
-   "notes": "With Whisky, it's possible to run Teardown on macOS Sequoia.",
+   "notes": "With Whisky, it's possible to run Teardown on macOS Sequoia. Runs in Uncork on the built-in OpenGL renderer: Ultra settings, 95-100 fps by eye, 72 fps in a heavy fog-and-water scene, about 74 fps on a heavier map (no average recorded). Tested by the Uncork developer.",
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Teardown",
    "wiki_rating": "perfect",
    "wiki_method": "wine",
-   "wiki_reported": "2024-11-24",
+   "wiki_reported": "2026-10-06",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Teardown"
   },
   {
@@ -22695,6 +22743,16 @@
    "wiki_method": "crossover",
    "wiki_reported": null,
    "wiki_url": "https://www.applegamingwiki.com/wiki/Urban_Chaos"
+  },
+  {
+   "id": "agw-uru-ages-beyond-myst",
+   "title": "Uru: Ages Beyond Myst",
+   "steam_appid": 63650,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Uru%3A_Ages_Beyond_Myst"
   },
   {
    "id": "agw-va-11-hall-a-cyberpunk-bartender-action",
