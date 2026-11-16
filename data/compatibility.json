@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T11:28:01Z",
+ "generated_at": "2026-11-16T11:11:36Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -4519,6 +4519,20 @@
    "wiki_method": "crossover",
    "wiki_reported": "2021-04-12",
    "wiki_url": "https://www.applegamingwiki.com/wiki/Company_of_Heroes"
+  },
+  {
+   "id": "agw-company-of-heroes-2",
+   "title": "Company of Heroes 2",
+   "steam_appid": null,
+   "status": "gold",
+   "backend": "",
+   "notes": "In case of Desync Error, I created a fix for it. {{Refdevice",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Company_of_Heroes_2",
+   "wiki_rating": "perfect",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Company_of_Heroes_2"
   },
   {
    "id": "agw-company-of-heroes-opposing-forces",
@@ -9366,6 +9380,20 @@
    "wiki_url": "https://www.applegamingwiki.com/wiki/Grand_Theft_Auto%3A_Vice_City"
   },
   {
+   "id": "agw-graveyard-keeper-2",
+   "title": "Graveyard Keeper 2",
+   "steam_appid": 4358690,
+   "status": "gold",
+   "backend": "",
+   "notes": "Playable.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Graveyard_Keeper_2",
+   "wiki_rating": "perfect",
+   "wiki_method": "wine",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Graveyard_Keeper_2"
+  },
+  {
    "id": "agw-greedfall",
    "title": "Greedfall",
    "steam_appid": null,
@@ -9827,6 +9855,20 @@
     "Easy Anti-Cheat"
    ],
    "anticheat_url": "https://areweanticheatyet.com/game/halo-the-master-chief-collection"
+  },
+  {
+   "id": "agw-harry-potter-and-the-sorcerer-s-stone",
+   "title": "Harry Potter and the Sorcerer's Stone",
+   "steam_appid": null,
+   "status": "native",
+   "backend": "none",
+   "notes": null,
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Harry_Potter_and_the_Sorcerer%27s_Stone",
+   "wiki_rating": "runs",
+   "wiki_method": "crossover",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Harry_Potter_and_the_Sorcerer%27s_Stone"
   },
   {
    "id": "agw-hatsune-miku-project-diva-mega-mix",
@@ -19524,6 +19566,20 @@
    "anticheat_url": "https://areweanticheatyet.com/game/stay-out"
   },
   {
+   "id": "agw-steel-giants",
+   "title": "Steel Giants",
+   "steam_appid": null,
+   "status": "silver",
+   "backend": "",
+   "notes": "Official app from the developers with Wine bundled. Requires Rosetta 2 (the app offers to install it) and macOS 14 or later. Includes the open-source x87sidecar acceleration layer for x87 floating-point code.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/Steel_Giants",
+   "wiki_rating": "playable",
+   "wiki_method": "wine",
+   "wiki_reported": "2026-11-13",
+   "wiki_url": "https://www.applegamingwiki.com/wiki/Steel_Giants"
+  },
+  {
    "id": "agw-stela",
    "title": "Stela",
    "steam_appid": 1048600,
@@ -23558,6 +23614,20 @@
    "notes": null,
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/World_of_Hex"
+  },
+  {
+   "id": "agw-world-of-sea-battle",
+   "title": "World of Sea Battle",
+   "steam_appid": 2948190,
+   "status": "borked",
+   "backend": "",
+   "notes": "Unplayable.",
+   "source": "applegamingwiki",
+   "source_url": "https://www.applegamingwiki.com/wiki/World_of_Sea_Battle",
+   "wiki_rating": "unplayable",
+   "wiki_method": "wine",
+   "wiki_reported": null,
+   "wiki_url": "https://www.applegamingwiki.com/wiki/World_of_Sea_Battle"
   },
   {
    "id": "agw-world-of-tanks",
