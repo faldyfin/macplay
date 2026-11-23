@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-16T11:11:36Z",
+ "generated_at": "2026-11-23T12:31:16Z",
  "license": "CC BY-NC-SA 3.0 (includes AppleGamingWiki content: https://creativecommons.org/licenses/by-nc-sa/3.0/)",
  "sources": [
   {
@@ -17161,9 +17161,9 @@
    "id": "agw-risk-of-rain-2",
    "title": "Risk of Rain 2",
    "steam_appid": null,
-   "status": "gold",
-   "backend": "",
-   "notes": "CrossOver ≤22 requires invisible characters fix.",
+   "status": "native",
+   "backend": "none",
+   "notes": null,
    "source": "applegamingwiki",
    "source_url": "https://www.applegamingwiki.com/wiki/Risk_of_Rain_2",
    "wiki_rating": "perfect",
